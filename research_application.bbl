@@ -1,0 +1,101 @@
+\begin{thebibliography}{}
+
+\bibitem [\protect \citeauthoryear {%
+Barr%
+\ \BBA {} Diamond%
+}{%
+Barr%
+\ \BBA {} Diamond%
+}{%
+{\protect \APACyear {2006}}%
+}]{%
+barr2006}
+\APACinsertmetastar {%
+barr2006}%
+\begin{APACrefauthors}%
+Barr, N.%
+\BCBT {}\ \BBA {} Diamond, P.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2006}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {THE ECONOMICS OF PENSIONS} {The economics of
+  pensions}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Oxford Review of Economic Policy}{22}{1}{15--39}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+French%
+}{%
+French%
+}{%
+{\protect \APACyear {2005}}%
+}]{%
+french2005}
+\APACinsertmetastar {%
+french2005}%
+\begin{APACrefauthors}%
+French, E.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2005}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {The Effects of Health, Wealth, and Wages on Labour
+  Supply and Retirement Behaviour} {The effects of health, wealth, and wages on
+  labour supply and retirement behaviour}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{The Review of Economic Studies}{72}{2}{395--427}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Thatcher%
+}{%
+Thatcher%
+}{%
+{\protect \APACyear {1999}}%
+}]{%
+thatcher1999}
+\APACinsertmetastar {%
+thatcher1999}%
+\begin{APACrefauthors}%
+Thatcher, A\BPBI R.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1999}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {The Long-Term Pattern of Adult Mortality and the Highest
+  Attained Age} {The long-term pattern of adult mortality and the highest
+  attained age}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Journal of the Royal Statistical Society. Series A
+  (Statistics in Society)}{162}{1}{5--43}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+張景淵%
+}{%
+張景淵%
+}{%
+{\protect \APACyear {2020}}%
+}]{%
+jhang2020}
+\APACinsertmetastar {%
+jhang2020}%
+\begin{APACrefauthors}%
+張景淵.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2020}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {台灣公務人員年金改革的總體經濟效果}
+  {台灣公務人員年金改革的總體經濟效果}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{國立臺灣大學經濟學系學位論文}{}{2020年}{}.
+\PrintBackRefs{\CurrentBib}
+
+\end{thebibliography}

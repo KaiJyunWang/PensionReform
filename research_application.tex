@@ -1,0 +1,137 @@
+\documentclass[12pt]{article}
+\usepackage{CJKutf8}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\usepackage{dsfont}
+\usepackage[natbibapa]{apacite}
+\usepackage{geometry}
+\geometry{
+ a4paper,
+ total={210mm,297mm},
+ left=30mm,
+ right=30mm,
+ top=30mm,
+ bottom=40mm
+}
+
+\title{研究計畫內容：[標題待定]}
+\date{}
+
+
+\begin{document}
+\begin{CJK*}{UTF8}{bkai}
+
+\maketitle
+
+\section*{\normalfont(一) 摘要}
+
+\section*{\normalfont(二) 研究動機與研究問題}
+
+\section*{\normalfont(三) 文獻回顧與探討}
+
+\cite{barr2006}年金問題總集篇\\
+
+\cite{french2005}將勞動供給、退休以及儲蓄行為內生化，考慮健康、工資的不確定性以及
+流動性限制。研究發現年金的請領結構是退休決策的主要因素，若移除對65歲以上的收入檢測制度
+\footnote{若收入超過一定水準，政府將會扣留一部份福利，美國在2000年時移除對64歲以上年
+齡退休者的收入檢測。}(earnings test)，平均退休年齡將延長一年；其餘因素如年金給付額、
+健康狀況及借貸限制對高齡退休決策的影響則相對輕微。\\
+
+\cite{jhang2020}
+
+\section*{\normalfont(四) 研究方法及步驟}
+\subsection*{\normalfont資料}
+
+\subsection*{\normalfont模型}
+考慮追求終身效用極大的消費者，其各期效用函數為CRRA，且消費與休閒之間為Cobb-Douglas
+\begin{equation}
+    u(c,n) = \frac{1}{1-\gamma}(c^\eta (l-\theta_n n)^{1-\eta})^{1-\gamma}
+\end{equation}
+其中$c$為消費、$n$為勞動(假設$n$為離散，$n=1$為有工作；$n=0$則否)、$\theta_n$為工時、
+$l-\theta_n n$為休閒、$1-\frac{1}{\eta}$為休閒對消費的替代彈性、$\gamma$為風險厭惡係
+數。
+
+消費者在工作時可以累積人力資本$h$，人力資本累積方程式為
+\begin{equation}
+    h_{t+1} = h_t + k_1\frac{n_t}{h_t^{k_2}}
+\end{equation}
+$k_1,k_2 > 0$。工資$w_t$為
+\begin{equation}
+    \ln w_t = \delta_0 + \delta_1 h_t + \epsilon_t
+\end{equation}
+\begin{equation}
+    \epsilon_t \overset{iid}{\sim} N(0,\sigma^2)
+\end{equation}
+
+同時，消費者面對死亡風險$\mu_t$。假設為\cite{thatcher1999}所提出的形式
+\begin{equation}
+    \mu_t = \frac{\theta_1}{1+ e^{\theta_2 - \theta_3 t}} + \theta_4
+\end{equation}
+$\theta_1,\theta_3 > 0$且假設存在壽命上限，$\theta_1+\theta_4 > 1$。
+
+消費者面對的預算限制式為
+\begin{equation}
+    c_t + a_{t+1} + \pi^\circ_t = (1+r)a_t + w_t n_t + g(\pi_t,p_t)
+\end{equation}
+其中$a_t$為$t$期的期初資產、$r$為利率、$\pi_t$為$t$期初退休金帳戶存款、$p_t$為個人選
+擇的退休金計畫($p_t=0$表示尚未領取)、$g(\pi_t,p_t)$為年金收入、$\pi^\circ_t$為該期個
+人提繳之退休金。
+
+滿60歲後，消費者可以提領年金，若工作年資滿15年，則可選擇月退休金或一次請領；若工作年資
+不滿15年，則只能一次請領。請領年金後若繼續工作，仍需繳交退休金，提繳年資重新計算。若選
+擇月退休金，則開始領取時需繳一次年金保險費。
+
+橫截條件(transversality condition)為
+\begin{equation}
+    \mathbb{E}_t[\frac{a_{T+1}}{(1+r)^T}] = 0
+\end{equation}
+其中$T$為該消費者死亡年齡。值得一提的是，無龐氏計謀條件(no-Ponzi scheme condition)
+\begin{equation}
+    \mathbb{E}_t[\frac{a_{T+1}}{(1+r)^T}] \geq 0
+\end{equation}
+在此模型中提供了自然的流動性限制，借貸限制會隨著年齡增加而緊縮。
+
+另外，我們假設人們具有兩種信念(belief)：一種相信年金有較高機率會破產\footnote{在這裡
+，我們假設破產的話消費者一毛錢都領不到。}($s=1$)，另一種則較低($s=0$)。假設
+$s \sim Bernoulli(\theta)$。每一期消費者認為年金破產的機率$q$為
+\begin{equation}
+    q(s) = q_0 + q_1 s 
+\end{equation}
+其中$q_0,q_1 \geq 0$。
+
+假設消費者有異質的時間偏好率$\beta_i$，且$\beta_i \sim F(\cdot)$。最後，假設以上所有
+隨機變數互相獨立。消費者$i$的價值函數(value function)為
+\begin{equation}
+    \begin{split}
+        V_{it}(a_t,h_t,\pi_t,w_t,p_t) = &\max_{c_t,n_t,a_{t+1},\pi^i_t,p_t} u(c_t,n_t) \\
+        &+ \beta_i (1-\mu_t) \mathbb{E}_t[V_{i,t+1}(a_{t+1},h_{t+1},\pi_{t+1},w_{t+1},p_{t+1})]
+    \end{split}
+\end{equation}
+subject to
+\begin{equation}
+    c_t + a_{t+1} + \pi^\circ_t = (1+r)a_t + w_t n_t + g(\pi_t,p_t)
+\end{equation}
+\begin{equation}
+    \pi_{t+1} = (1+r_p) \pi_t + \pi^f_t + \pi^i_t - g(\pi_t,p_t)
+\end{equation}
+\begin{equation}
+    \mathbb{E}_t[\frac{a_{T+1}}{(1+r)^T}] = 0
+\end{equation}
+
+\subsection*{\normalfont研究流程}
+
+\section*{\normalfont(五) 預期結果}
+
+\section*{\normalfont(六) 需要教授指導內容}
+\begin{enumerate}
+    \item 討論與理解現有文獻，並提出本計畫在文獻中的突破。
+    \item 討論模型設定與推導，並完整掌握模型之經濟意義。
+    \item 指導計量方法如EM Algorithm、initial conditions problem、
+    identification problem等等以及如何加速程式計算。
+    \item 指導論文寫作、編排等等。
+\end{enumerate}
+
+\bibliographystyle{apacite}
+\bibliography{ref_res_app}
+\end{CJK*}
+\end{document}
