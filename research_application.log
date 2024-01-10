@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.12) (preloaded format=pdflatex 2023.1.14)  6 JAN 2024 19:44
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.12) (preloaded format=pdflatex 2023.1.14)  10 JAN 2024 16:08
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -420,40 +420,40 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 LaTeX Warning: No \author given.
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 32--33
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 34--39
-
- []
-
+<tw_pension_pay.png, id=49, 826.287pt x 384.2355pt>
+File: tw_pension_pay.png Graphic file (type png)
+<use tw_pension_pay.png>
+Package pdftex.def Info: tw_pension_pay.png  used on input line 36.
+(pdftex.def)             Requested size: 341.43437pt x 158.76878pt.
 [1
 
-{C:/Users/kevin/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] [2] (research_application.bbl
+{C:/Users/kevin/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map} <./tw_pension_pay.png>] [2]
+Overfull \hbox (1.74254pt too wide) in paragraph at lines 154--159
+[]\C70/bkai/m/n/12/7b , \C70/bkai/m/n/12/4e Œ \C70/bkai/m/n/12/96 Ž \C70/bkai/m/n/12/6b µ \C70/bkai/m/n/12/ff ^^L \C70/bkai/m/n/12/62 ^^Q \C70/bkai/m/n/12/50 ^^Q \C70/bkai/m/n/12/5c ^^G \C70/bkai/m/n/12/52 ) \C70/bkai/m/n/12/75 ( \C70/bkai/m/n/12/6a ! \C70/bkai/m/n/12/64 ì \C70/bkai/m/n/12/52 Õ \C70/bkai/m/n/12/5d î \C70/bkai/m/n/12/4f 0 \C70/bkai/m/n/12/8a ^^H \C70/bkai/m/n/12/6c Õ\OT1/cmr/m/n/12 (simulated method of mo-ments, SMM)\C70/bkai/m/n/12/30 ^^A
+ []
+
+[3] [4] (research_application.bbl
 
 LaTeX Font Warning: Font shape `C70/bkai/m/it' undefined
-(Font)              using `C70/bkai/m/n' instead on input line 98.
+(Font)              using `C70/bkai/m/n' instead on input line 273.
 
-) [3] (research_application.aux)
+) [5] (research_application.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) 
 Here is how much of TeX's memory you used:
- 6761 strings out of 476406
- 95248 string characters out of 2800354
- 1872787 words of memory out of 3000000
- 26781 multiletter control sequences out of 15000+600000
- 564237 words of font info for 217 fonts, out of 8000000 for 9000
+ 7072 strings out of 476406
+ 99766 string characters out of 2800354
+ 1876787 words of memory out of 3000000
+ 27068 multiletter control sequences out of 15000+600000
+ 570865 words of font info for 240 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 56i,16n,62p,267b,1101s stack positions out of 10000i,1000n,20000p,200000b,80000s
-<C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu30.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu4e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu4f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu50.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu51.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu52.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu53.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu54.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu55.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu56.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu57.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu58.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu59.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5b.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5c.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5d.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu60.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu61.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu62.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu63.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu64.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu65.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu66.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu67.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu68.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu69.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6b.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6c.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6d.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu70.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu71.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu72.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu73.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu74.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu75.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu76.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu78.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu79.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7b.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7c.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7d.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu80.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu81.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu82.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu84.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu88.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu89.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8b.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8c.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8d.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu90.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu91.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu93.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu95.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu96.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu97.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu98.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu99.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu9a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu9f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiuff.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmti12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on research_application.pdf (3 pages, 617324 bytes).
+ 56i,16n,62p,277b,1236s stack positions out of 10000i,1000n,20000p,200000b,80000s
+<C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu30.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu4e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu4f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu50.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu51.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu52.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu53.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu54.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu55.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu56.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu57.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu58.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu59.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5b.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5c.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5d.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu60.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu61.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu62.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu63.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu64.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu65.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu66.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu67.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu68.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu69.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6b.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6c.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6d.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu70.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu71.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu72.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu73.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu74.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu75.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu76.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu77.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu78.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu79.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7b.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7d.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu80.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu81.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu82.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu84.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu86.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu88.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu89.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8b.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8c.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8d.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu90.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu91.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu95.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu96.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu97.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu98.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu99.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu9a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu9e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu9f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiuff.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmti12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on research_application.pdf (5 pages, 834417 bytes).
 PDF statistics:
- 514 PDF objects out of 1000 (max. 8388607)
+ 544 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 289 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 298 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -1,29 +1,51 @@
 \begin{thebibliography}{}
 
 \bibitem [\protect \citeauthoryear {%
-Barr%
-\ \BBA {} Diamond%
+Aaron%
 }{%
-Barr%
-\ \BBA {} Diamond%
+Aaron%
 }{%
-{\protect \APACyear {2006}}%
+{\protect \APACyear {1966}}%
 }]{%
-barr2006}
+aaron1966}
 \APACinsertmetastar {%
-barr2006}%
+aaron1966}%
 \begin{APACrefauthors}%
-Barr, N.%
-\BCBT {}\ \BBA {} Diamond, P.%
+Aaron, H.%
 \end{APACrefauthors}%
 \unskip\
 \newblock
-\APACrefYearMonthDay{2006}{}{}.
+\APACrefYearMonthDay{1966}{}{}.
 \newblock
-{\BBOQ}\APACrefatitle {THE ECONOMICS OF PENSIONS} {The economics of
-  pensions}.{\BBCQ}
+{\BBOQ}\APACrefatitle {The Social Insurance Paradox} {The social insurance
+  paradox}.{\BBCQ}
 \newblock
-\APACjournalVolNumPages{Oxford Review of Economic Policy}{22}{1}{15--39}.
+\APACjournalVolNumPages{The Canadian Journal of Economics and Political Science
+  / Revue canadienne d'Economique et de Science politique}{32}{3}{371--374}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Burtless%
+}{%
+Burtless%
+}{%
+{\protect \APACyear {1986}}%
+}]{%
+burtless1986}
+\APACinsertmetastar {%
+burtless1986}%
+\begin{APACrefauthors}%
+Burtless, G.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1986}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Social Security, Unanticipated Benefit Increases, and
+  the Timing of Retirement} {Social security, unanticipated benefit increases,
+  and the timing of retirement}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{The Review of Economic Studies}{53}{5}{781--805}.
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -48,6 +70,136 @@ French, E.%
   labour supply and retirement behaviour}.{\BBCQ}
 \newblock
 \APACjournalVolNumPages{The Review of Economic Studies}{72}{2}{395--427}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Gustman%
+\ \BBA {} Steinmeier%
+}{%
+Gustman%
+\ \BBA {} Steinmeier%
+}{%
+{\protect \APACyear {1986}}%
+}]{%
+gustman1986}
+\APACinsertmetastar {%
+gustman1986}%
+\begin{APACrefauthors}%
+Gustman, A\BPBI L.%
+\BCBT {}\ \BBA {} Steinmeier, T\BPBI L.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1986}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {A Structural Retirement Model} {A structural retirement
+  model}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Econometrica}{54}{3}{555--584}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Low%
+\ \BBA {} Pistaferri%
+}{%
+Low%
+\ \BBA {} Pistaferri%
+}{%
+{\protect \APACyear {2015}}%
+}]{%
+pistaferri2015}
+\APACinsertmetastar {%
+pistaferri2015}%
+\begin{APACrefauthors}%
+Low, H.%
+\BCBT {}\ \BBA {} Pistaferri, L.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2015}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Disability Insurance and the Dynamics of the Incentive
+  Insurance Trade-Off} {Disability insurance and the dynamics of the incentive
+  insurance trade-off}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{The American Economic Review}{105}{10}{2986--3029}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Rust%
+\ \BBA {} Phelan%
+}{%
+Rust%
+\ \BBA {} Phelan%
+}{%
+{\protect \APACyear {1997}}%
+}]{%
+rust1997}
+\APACinsertmetastar {%
+rust1997}%
+\begin{APACrefauthors}%
+Rust, J.%
+\BCBT {}\ \BBA {} Phelan, C.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1997}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {How Social Security and Medicare Affect Retirement
+  Behavior In a World of Incomplete Markets} {How social security and medicare
+  affect retirement behavior in a world of incomplete markets}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Econometrica}{65}{4}{781--831}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Samuelson%
+}{%
+Samuelson%
+}{%
+{\protect \APACyear {1958}}%
+}]{%
+samuelson1958}
+\APACinsertmetastar {%
+samuelson1958}%
+\begin{APACrefauthors}%
+Samuelson, P\BPBI A.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1958}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {An Exact Consumption-Loan Model of Interest with or
+  without the Social Contrivance of Money} {An exact consumption-loan model of
+  interest with or without the social contrivance of money}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Journal of Political Economy}{66}{6}{467--482}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Stock%
+\ \BBA {} Wise%
+}{%
+Stock%
+\ \BBA {} Wise%
+}{%
+{\protect \APACyear {1990}}%
+}]{%
+stock1990}
+\APACinsertmetastar {%
+stock1990}%
+\begin{APACrefauthors}%
+Stock, J\BPBI H.%
+\BCBT {}\ \BBA {} Wise, D\BPBI A.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{1990}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {Pensions, the Option Value of Work, and Retirement}
+  {Pensions, the option value of work, and retirement}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Econometrica}{58}{5}{1151--1180}.
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
@@ -76,26 +228,49 @@ Thatcher, A\BPBI R.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
-張景淵%
+Wooldridge%
 }{%
-張景淵%
+Wooldridge%
 }{%
-{\protect \APACyear {2020}}%
+{\protect \APACyear {2005}}%
 }]{%
-jhang2020}
+wooldridge2005}
 \APACinsertmetastar {%
-jhang2020}%
+wooldridge2005}%
 \begin{APACrefauthors}%
-張景淵.%
+Wooldridge, J\BPBI M.%
 \end{APACrefauthors}%
 \unskip\
 \newblock
-\APACrefYearMonthDay{2020}{}{}.
+\APACrefYearMonthDay{2005}{}{}.
 \newblock
-{\BBOQ}\APACrefatitle {台灣公務人員年金改革的總體經濟效果}
-  {台灣公務人員年金改革的總體經濟效果}.{\BBCQ}
+{\BBOQ}\APACrefatitle {Simple Solutions to the Initial Conditions Problem in
+  Dynamic, Nonlinear Panel Data Models with Unobserved Heterogeneity} {Simple
+  solutions to the initial conditions problem in dynamic, nonlinear panel data
+  models with unobserved heterogeneity}.{\BBCQ}
 \newblock
-\APACjournalVolNumPages{國立臺灣大學經濟學系學位論文}{}{2020年}{}.
+\APACjournalVolNumPages{Journal of Applied Econometrics}{20}{1}{39--54}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+國家發展委員會人力發展處%
+}{%
+國家發展委員會人力發展處%
+}{%
+{\protect \APACyear {2021}}%
+}]{%
+old_age_econ5}
+\APACinsertmetastar {%
+old_age_econ5}%
+\begin{APACrefauthors}%
+國家發展委員會人力發展處.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2021}{}{}.
+\newblock
+\APACrefbtitle {老年經濟安全制度專刊第5期.}
+  {老年經濟安全制度專刊第5期.}
 \PrintBackRefs{\CurrentBib}
 
 \end{thebibliography}
