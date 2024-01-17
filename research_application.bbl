@@ -73,6 +73,33 @@ French, E.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
+French%
+\ \BBA {} Jones%
+}{%
+French%
+\ \BBA {} Jones%
+}{%
+{\protect \APACyear {2011}}%
+}]{%
+french2011}
+\APACinsertmetastar {%
+french2011}%
+\begin{APACrefauthors}%
+French, E.%
+\BCBT {}\ \BBA {} Jones, J\BPBI B.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2011}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {THE EFFECTS OF HEALTH INSURANCE AND SELF-INSURANCE ON
+  RETIREMENT BEHAVIOR} {The effects of health insurance and self-insurance on
+  retirement behavior}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{Econometrica}{79}{3}{693--732}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
 Gustman%
 \ \BBA {} Steinmeier%
 }{%
@@ -177,32 +204,6 @@ Samuelson, P\BPBI A.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
-Stock%
-\ \BBA {} Wise%
-}{%
-Stock%
-\ \BBA {} Wise%
-}{%
-{\protect \APACyear {1990}}%
-}]{%
-stock1990}
-\APACinsertmetastar {%
-stock1990}%
-\begin{APACrefauthors}%
-Stock, J\BPBI H.%
-\BCBT {}\ \BBA {} Wise, D\BPBI A.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{1990}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Pensions, the Option Value of Work, and Retirement}
-  {Pensions, the option value of work, and retirement}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Econometrica}{58}{5}{1151--1180}.
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
 Thatcher%
 }{%
 Thatcher%
@@ -228,31 +229,6 @@ Thatcher, A\BPBI R.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
-Wooldridge%
-}{%
-Wooldridge%
-}{%
-{\protect \APACyear {2005}}%
-}]{%
-wooldridge2005}
-\APACinsertmetastar {%
-wooldridge2005}%
-\begin{APACrefauthors}%
-Wooldridge, J\BPBI M.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2005}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Simple Solutions to the Initial Conditions Problem in
-  Dynamic, Nonlinear Panel Data Models with Unobserved Heterogeneity} {Simple
-  solutions to the initial conditions problem in dynamic, nonlinear panel data
-  models with unobserved heterogeneity}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Journal of Applied Econometrics}{20}{1}{39--54}.
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
 國家發展委員會人力發展處%
 }{%
 國家發展委員會人力發展處%
@@ -271,6 +247,123 @@ old_age_econ5}%
 \newblock
 \APACrefbtitle {老年經濟安全制度專刊第5期.}
   {老年經濟安全制度專刊第5期.}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+張景淵%
+}{%
+張景淵%
+}{%
+{\protect \APACyear {2020}}%
+}]{%
+jhang2020}
+\APACinsertmetastar {%
+jhang2020}%
+\begin{APACrefauthors}%
+張景淵.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2020}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {台灣公務人員年金改革的總體經濟效果}
+  {台灣公務人員年金改革的總體經濟效果}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{國立臺灣大學經濟學系學位論文}{}{2020年}{}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+楊于箴%
+}{%
+楊于箴%
+}{%
+{\protect \APACyear {2010}}%
+}]{%
+yang2010}
+\APACinsertmetastar {%
+yang2010}%
+\begin{APACrefauthors}%
+楊于箴.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2010}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {勞退新制對中高齡者勞動供給之影響}
+  {勞退新制對中高齡者勞動供給之影響}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{中國文化大學經濟學系學位論文}{}{}{}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+楊子霆與駱明慶%
+}{%
+楊子霆與駱明慶%
+}{%
+{\protect \APACyear {2009}}%
+}]{%
+yang2009}
+\APACinsertmetastar {%
+yang2009}%
+\begin{APACrefauthors}%
+楊子霆與駱明慶.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2009}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle
+  {誰付退休金？－勞退新制對私部門勞工薪資的影響}
+  {誰付退休金？－勞退新制對私部門勞工薪資的影響}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{經濟論文}{37}{3}{339-368}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+辛炳隆、劉峰瑋與張詩雋%
+}{%
+辛炳隆、劉峰瑋與張詩雋%
+}{%
+{\protect \APACyear {2017}}%
+}]{%
+reform2017}
+\APACinsertmetastar {%
+reform2017}%
+\begin{APACrefauthors}%
+辛炳隆、劉峰瑋與張詩雋.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2017}{}{}.
+\newblock
+\APACrefbtitle {年金制度改革對總體經濟及勞動市場之影響.}
+  {年金制度改革對總體經濟及勞動市場之影響.}
+\newblock
+\APACaddressPublisher{}{國家發展委員會}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+陳佩琪%
+}{%
+陳佩琪%
+}{%
+{\protect \APACyear {2015}}%
+}]{%
+chen2015}
+\APACinsertmetastar {%
+chen2015}%
+\begin{APACrefauthors}%
+陳佩琪.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2015}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle
+  {臺灣勞工保險改制年金給付對家戶儲蓄之影響}
+  {臺灣勞工保險改制年金給付對家戶儲蓄之影響}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{臺北大學財政學系學位論文}{}{2015年}{1-59}.
 \PrintBackRefs{\CurrentBib}
 
 \end{thebibliography}
