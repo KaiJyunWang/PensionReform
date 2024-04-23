@@ -1,6 +1,6 @@
 using Distributions, LinearAlgebra, Plots, Interpolations
 using Parameters, Random, Tables, Profile
-using CUDA, CUDAKernels, KernelAbstractions, Tullio, Adapt
+using CUDA, KernelAbstractions, Tullio, CUDAKernels
 using BenchmarkTools
 
 #life-cycle problem of pension solver
