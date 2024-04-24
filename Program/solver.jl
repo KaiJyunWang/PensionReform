@@ -1,6 +1,6 @@
 using Distributions, LinearAlgebra, Plots, Interpolations
 using Parameters, Random, Tables, Profile
-using CUDA, KernelAbstractions, Tullio, CUDAKernels
+using CUDA, CUDAKernels, KernelAbstractions, Tullio
 using BenchmarkTools
 
 #life-cycle problem of pension solver
@@ -75,8 +75,8 @@ function stair(x::Float64; c::Array{Float64,1} = c)
 end
 
 para = @with_kw (γ = 1.5, η = 0.6, r = 0.02, β = 1/(1+r), ϵ = collect(range(0.0, 2.0, 11)), 
-    T = 80, μ = mort.μ, init_t = 40, ρ = 0.97, σ = 0.1, ξ = σ*randn(250), asset = collect(range(0.0, 25.0, 26)), 
-    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.1, δ = [0.05, -0.004], φ_l = 0.5, θ_b = 0.0, κ = 2.0,
+    T = 80, μ = mort.μ, init_t = 40, ρ = 0.97, σ = 0.1, ξ = σ*randn(250), asset = collect(range(0.0, 15.0, 16)), 
+    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.1, δ = [0.05, -0.003], φ_l = 0.5, θ_b = 0.0, κ = 2.0,
     aime = profile, plan = collect(1:4), ra = 60, τ = 0.12, lme = profile)
 para = para()
 
@@ -126,7 +126,7 @@ function solve(v::Array{Float64,8};para)
     
     for s in 1:T-init_t+1
         t = T-s+1
-        extra_benefit = (t-ra) ≤ 5 ? 0.04*(t-ra) : 0.0
+        extra_benefit = (t-ra) ≤ 5 ? 0.04*(t-ra) : -1.0
         mort = μ[t]
         v_func = LinearInterpolation((asset, ϵ_grid[:,t-init_t+2], wy, plan, work, aime, lme), v[:,:,:,:,:,:,:,t-init_t+2])
         ϵ_cua = CuArray(ϵ_grid[:,t-init_t+1])
@@ -239,5 +239,9 @@ age = para.init_t:para.T
 plt = plot(age, wage, label = "wage", xlabel = "age", title = "wage profile")
 plot!(age, asset[2:end], label = "asset")
 vcat(findall(x -> x == 0, work[2:end]) .+ para.init_t .- 0.5, findall(x -> x == 0, work[2:end]) .+ para.init_t .+ 0.5) |> x -> sort(x) |> x -> vspan!(plt, x, color = :gray, label = "retirement", alpha = 0.3)
-
-
+first_pension = findfirst(x -> x != 1, plan) .+ para.init_t - 1 
+if plan[first_pension - para.init_t + 1] == 2
+    vline!(plt, [first_pension], label = "Receive Penion: Lump-sum", color = :purple)
+else
+    vline!(plt, [first_pension], label = "Receive Penion: Monthly", color = :green)
+end
