@@ -1,68 +1,19 @@
+include("Mortality.jl")
+using .Mortality
+include("PensionBenefit.jl")
+using .PensionBenefit
+
 using Distributions, LinearAlgebra, Plots, Interpolations
 using Parameters, Random, Tables, Profile
 using CUDA, CUDAKernels, KernelAbstractions, Tullio
 using BenchmarkTools
 
 #life-cycle problem of pension solver
-
-#mortality law from Thatcher(1999)
-function mortality(x::Array{Float64,1})
-    T = floor(Int, ceil((log(1-x[4])+log(x[2])-log(x[1]+x[4]-1))/x[3]))
-    μ = ones(T)
-    for t in 1:T-1
-        μ[t] = x[1]/(1+x[2]*exp(-x[3]*t))+x[4]
-    end
-    return (T = T, μ = μ)
-end
-
-#life Distributions
-function life_dist(x::Array{Float64,1}, T::Int)
-    D = zeros(T, T) |> x -> LowerTriangular(x)
-    for t in 1:T
-        for s in t+1:T
-            D[s,t] = (1 - sum(D[t:s-1,t]))*x[s]
-        end
-    end
-    return D
-end
-
 mort = mortality([1.5, 100000.0, 0.1, 0.0003])
+T = life_ceil([1.5, 100000.0, 0.1, 0.0003])
 
 #profile of aime
 profile = [2.747, 3.48, 4.58]
-
-#pension benefit formula
-#unit: month wage
-#pension type: 1: no pension, 2: lump-sum pension, 3: monthly pension, 4: received pension
-function benefit(aime::Float64, p::Int64, h::Int64, t::Int64, ra::Int64)
-    if (p == 1) || (p == 4)
-        return 0.0
-    elseif p == 2
-        return min(max(h, 2*h-15), 50)*aime
-    else
-        return max(h*aime*0.00775+3, h*aime*0.0155)*(1+0.04*min(abs(t-ra), 5)*sign(t-ra))
-    end
-end
-#pension tax formula
-function tax(aime::Float64, p::Int, τ::Float64 = 0.12)
-    if p == 1
-        return aime*0.2*τ
-    else
-        return 0.0
-    end
-end
-#utility function 
-function u(c::Float64, n::Int64; γ::Float64, η::Float64, c_min::Float64)
-    if c ≥ c_min
-        if γ == 1
-            return η*log(c) + (1-η)*log(364-260*n)
-        else
-            return (((c^η)*(364-260*n)^(1-η))^(1-γ))/(1-γ)
-        end
-    else
-        return -1e200
-    end
-end
 
 function stair(x::Float64; c::Array{Float64,1} = c)
     if x < c[2]
@@ -74,9 +25,9 @@ function stair(x::Float64; c::Array{Float64,1} = c)
     end
 end
 
-para = @with_kw (γ = 1.5, η = 0.6, r = 0.02, β = 1/(1+r), ϵ = collect(range(0.0, 2.0, 11)), 
-    T = 80, μ = mort.μ, init_t = 40, ρ = 0.97, σ = 0.1, ξ = σ*randn(250), asset = collect(range(0.0, 15.0, 16)), 
-    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.1, δ = [0.05, -0.003], φ_l = 0.5, θ_b = 0.0, κ = 2.0,
+para = @with_kw (γ = 1.5, η = 0.9, r = 0.02, β = 1/(1+r), ϵ = collect(range(0.0, 3.0, 5)), 
+    T = T, μ = mort, init_t = 40, ρ = 0.97, σ = 0.1, ξ = σ*randn(250), asset = collect(range(0.0, 15.0, 16)), 
+    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.02, δ = [0.5, 0.55, -0.003], φ_l = 0.5, θ_b = 0.0, κ = 2.0,
     aime = profile, plan = collect(1:4), ra = 60, τ = 0.12, lme = profile)
 para = para()
 
@@ -84,7 +35,7 @@ v = zeros(length(para.asset), length(para.ϵ), length(para.wy), length(para.plan
 function solve(v::Array{Float64,8};para)
     (; γ, η, r, β, ϵ, T, μ, init_t, ρ, σ, ξ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme) = para
 
-    wy_comp = [δ[1]*min(wy_ceil, wy[m]) + δ[2]*min(wy_ceil, wy[m])^2 for m in 1:length(wy)] |> x -> CuArray(x)
+    wy_comp = [δ[1] + δ[2]*wy[m] + δ[3]*wy[m]^2 for m in 1:length(wy)] |> x -> CuArray(x)
 
     #policy function 1: asset, 2: work, 3: plan
     policy = zeros(length(asset), length(ϵ), length(wy), length(plan), length(work), length(aime), length(lme), T-init_t+1, 3)
@@ -146,12 +97,12 @@ function solve(v::Array{Float64,8};para)
         @tullio consumption[i,j,l,m,k,x,q,y] = (1+$r)*asset[i] + income[l,m,k,q,y] + adj_cost[k,x] - asset[j]
         @tullio leisure[k] = 364-260*work[k]
         #consumption floor
-        @tullio utility[i,j,k,l,m,x,q,y] = consumption[i,j,l,m,k,x,q,y] > $c_min ? ($η*log(consumption[i,j,l,m,k,x,q,y]) + (1-$η)*log(leisure[k]))*(1-$γ) : -1e200
+        @tullio utility[i,j,k,l,m,x,q,y] = consumption[i,j,l,m,k,x,q,y] > $c_min ? (($η*log(consumption[i,j,l,m,k,x,q,y]) + (1-$η)*log(leisure[k]))*(1-$γ))/(1-$γ) : -1e200
         #bequest
-        @tullio bequest[j] = $θ_b*($κ+asset[j])^(1-$γ)*$mort
+        @tullio bequest[j] = ($θ_b*($κ+asset[j])^(1-$γ))/(1-$γ)*$mort
         #forbidden path of applying for pension
         #1: unreceived, 2: lump-sum, 3: monthly, 4: received lump-sum
-        @tullio forbid[p,q,m] = (((wy[m] == 0)&&(p != 4))||((plan[p] == 2)&&(plan[q] != 4))||((plan[p] == 3)&&(plan[q] != 3))||((plan[p] == 4)&&(plan[q] != 4)) ? -1e200 : 0.0)
+        @tullio forbid[p,q,m] = (($t < $ra - 5)||(wy[m] == 0)&&(plan[q] != 1)||((plan[p] == 2)&&(plan[q] != 4))||((plan[p] == 3)&&(plan[q] != 3))||((plan[p] == 4)&&(plan[q] != 4)) ? -1e200 : 0.0)
         #future lowest monthly wage
         @tullio f_lme[z,l,m,k] = min(4.58, max(lme[z], wage[l,m]*work[k]))
         #future work years
@@ -187,13 +138,13 @@ sol = solve(v; para)
 #simulation
 ϵ = zeros(para.T-para.init_t+1)
 #initial ϵ
-ϵ[1] = 0.7
+ϵ[1] = 0.5
 for t in 2:para.T-para.init_t+1
     ϵ[t] = para.ρ*ϵ[t-1] + para.σ*randn()
 end
 asset = zeros(para.T-para.init_t+2)
 #initial asset
-asset[1] = 1.0
+asset[1] = 2.0
 work = zeros(para.T-para.init_t+2)
 #initial working status
 work[1] = 1
@@ -223,8 +174,8 @@ for t in 1:para.T-para.init_t
     plan[t+1] = round(Int, p_func(asset[t], ϵ[t], wy[t], plan[t], work[t], s_aime[t], lme[t]))
     wage[t] = max(2.747, exp(ϵ[t] + wy[t]))
     #state transition
-    wy_comp = para.δ[1]*wy[t] + para.δ[2]*wy[t]^2
-    wage[t] = min(exp(ϵ[t] + wy_comp), 2.747)
+    wy_comp = para.δ[1] + para.δ[2]*wy[t] + para.δ[3]*wy[t]^2
+    wage[t] = max(exp(ϵ[t] + wy_comp), 2.747)
     c_aime = stair(wage[t]; c = para.aime)
     pension_tax = c_aime*0.2*para.τ
     wy[t+1] = min(para.wy_ceil, wy[t]+work[t+1])
@@ -238,10 +189,12 @@ end
 age = para.init_t:para.T
 plt = plot(age, wage, label = "wage", xlabel = "age", title = "wage profile")
 plot!(age, asset[2:end], label = "asset")
-vcat(findall(x -> x == 0, work[2:end]) .+ para.init_t .- 0.5, findall(x -> x == 0, work[2:end]) .+ para.init_t .+ 0.5) |> x -> sort(x) |> x -> vspan!(plt, x, color = :gray, label = "retirement", alpha = 0.3)
+vcat(findall(x -> x == 0, work[2:end]) .+ para.init_t .- 1.5, findall(x -> x == 0, work[2:end]) .+ para.init_t .- 0.5) |> x -> sort(x) |> x -> vspan!(plt, x, color = :gray, label = "not working", alpha = 0.3)
 first_pension = findfirst(x -> x != 1, plan) .+ para.init_t - 1 
 if plan[first_pension - para.init_t + 1] == 2
-    vline!(plt, [first_pension], label = "Receive Penion: Lump-sum", color = :purple)
+    vline!(plt, [first_pension + 0.5], label = "Receive Penion: Lump-sum", color = :purple)
 else
-    vline!(plt, [first_pension], label = "Receive Penion: Monthly", color = :green)
+    vline!(plt, [first_pension + 0.5], label = "Receive Penion: Monthly", color = :green)
 end
+plot!(age, consumption, label = "consumption")
+findall(x -> x < para.c_min, consumption)
