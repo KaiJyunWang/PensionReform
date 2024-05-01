@@ -25,10 +25,10 @@ function stair(x::Float64; c::Array{Float64,1} = c)
     end
 end
 
-para = @with_kw (γ = 1.5, η = 0.9, r = 0.02, β = 1/(1+r), ϵ = collect(range(0.0, 3.0, 5)), 
-    T = T, μ = mort, init_t = 40, ρ = 0.97, σ = 0.1, ξ = σ*randn(250), asset = collect(range(0.0, 15.0, 16)), 
-    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.02, δ = [0.5, 0.55, -0.003], φ_l = 0.5, θ_b = 0.0, κ = 2.0,
-    aime = profile, plan = collect(1:4), ra = 60, τ = 0.12, lme = profile)
+para = @with_kw (γ = 5.0, η = 0.9, r = 0.02, β = 0.99, ϵ = collect(range(0.0, 3.0, 5)), 
+    T = T, μ = mort, init_t = 40, ρ = 0.97, σ = 0.1, ξ = σ*randn(100), asset = collect(range(0.0, 20.0, 16)), 
+    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.02, δ = [1.2, 0.008, -0.0002], φ_l = 0.5, θ_b = 0.0, κ = 2.0,
+    aime = profile, plan = collect(1:4), ra = 65, τ = 0.12, lme = profile)
 para = para()
 
 v = zeros(length(para.asset), length(para.ϵ), length(para.wy), length(para.plan), length(para.work), length(para.aime), length(para.lme), para.T-para.init_t+2)
@@ -95,9 +95,10 @@ function solve(v::Array{Float64,8};para)
         @tullio income[l,m,k,q,y] = wage[l,m]*work[k] + benefit[y,m,q] - pension_tax[l,m]*work[k]*(plan[q] == 1)
         #consumption
         @tullio consumption[i,j,l,m,k,x,q,y] = (1+$r)*asset[i] + income[l,m,k,q,y] + adj_cost[k,x] - asset[j]
-        @tullio leisure[k] = 364-260*work[k]
+        #leisure
+        @tullio leisure[k] = (364-260*work[k])^(1-$η)
         #consumption floor
-        @tullio utility[i,j,k,l,m,x,q,y] = consumption[i,j,l,m,k,x,q,y] > $c_min ? (($η*log(consumption[i,j,l,m,k,x,q,y]) + (1-$η)*log(leisure[k]))*(1-$γ))/(1-$γ) : -1e200
+        @tullio utility[i,j,k,l,m,x,q,y] = consumption[i,j,l,m,k,x,q,y] > $c_min ? (((consumption[i,j,l,m,k,x,q,y]^($η))*leisure[k])^(1-$γ))/(1-$γ) : -1e200
         #bequest
         @tullio bequest[j] = ($θ_b*($κ+asset[j])^(1-$γ))/(1-$γ)*$mort
         #forbidden path of applying for pension
@@ -113,6 +114,7 @@ function solve(v::Array{Float64,8};para)
         @tullio f_aime[y,z,l,m,k] = (((wy[m] + work[k]) > 0) ? (wy[m] < 5 ? less_5y_f_aime[y,l,m,k] : more_5y_f_aime[y,z,l,m,k]) : 2.747)
         @tullio f_aime[y,z,l,m,k] = min(4.58, f_aime[y,z,l,m,k])
         #EV part
+        #try gaussian quadrature
         @tullio f_utility[j,k,l,m,y,z,q] = mean(v_func.(asset[j], f_ϵ[l] .+ ξ, f_wy[m,k], plan[q], work[k], f_aime[y,z,l,m,k], f_lme[z,l,m,k]))
 
         @tullio candidate[i,l,m,p,x,y,z,j,k,q] = utility[i,j,k,l,m,x,q,y] + (1-$mort)*$β*f_utility[j,k,l,m,y,z,q] + bequest[j] + forbid[p,q,m]
@@ -138,13 +140,13 @@ sol = solve(v; para)
 #simulation
 ϵ = zeros(para.T-para.init_t+1)
 #initial ϵ
-ϵ[1] = 0.5
+ϵ[1] = 0.2
 for t in 2:para.T-para.init_t+1
     ϵ[t] = para.ρ*ϵ[t-1] + para.σ*randn()
 end
 asset = zeros(para.T-para.init_t+2)
 #initial asset
-asset[1] = 2.0
+asset[1] = 10.0
 work = zeros(para.T-para.init_t+2)
 #initial working status
 work[1] = 1
@@ -170,8 +172,8 @@ for t in 1:para.T-para.init_t
     w_func = LinearInterpolation((para.asset, sol.ϵ_grid[:,t], para.wy, para.plan, para.work, para.aime, para.lme), sol.policy[:,:,:,:,:,:,:,t,2])
     p_func = LinearInterpolation((para.asset, sol.ϵ_grid[:,t], para.wy, para.plan, para.work, para.aime, para.lme), sol.policy[:,:,:,:,:,:,:,t,3])
     asset[t+1] = a_func(asset[t], ϵ[t], wy[t], plan[t], work[t], s_aime[t], lme[t])
-    work[t+1] = round(Int, w_func(asset[t], ϵ[t], wy[t], plan[t], work[t], s_aime[t], lme[t]))
-    plan[t+1] = round(Int, p_func(asset[t], ϵ[t], wy[t], plan[t], work[t], s_aime[t], lme[t]))
+    work[t+1] = ceil(Int, w_func(asset[t], ϵ[t], wy[t], plan[t], work[t], s_aime[t], lme[t]))
+    plan[t+1] = floor(Int, p_func(asset[t], ϵ[t], wy[t], plan[t], work[t], s_aime[t], lme[t]))
     wage[t] = max(2.747, exp(ϵ[t] + wy[t]))
     #state transition
     wy_comp = para.δ[1] + para.δ[2]*wy[t] + para.δ[3]*wy[t]^2
@@ -187,14 +189,15 @@ end
 
 #plotting
 age = para.init_t:para.T
-plt = plot(age, wage, label = "wage", xlabel = "age", title = "wage profile")
+plt = plot(age, wage, label = "wage", xlabel = "age", title = "Life-Cycle", legend = :outertopright)
 plot!(age, asset[2:end], label = "asset")
 vcat(findall(x -> x == 0, work[2:end]) .+ para.init_t .- 1.5, findall(x -> x == 0, work[2:end]) .+ para.init_t .- 0.5) |> x -> sort(x) |> x -> vspan!(plt, x, color = :gray, label = "not working", alpha = 0.3)
 first_pension = findfirst(x -> x != 1, plan) .+ para.init_t - 1 
 if plan[first_pension - para.init_t + 1] == 2
-    vline!(plt, [first_pension + 0.5], label = "Receive Penion: Lump-sum", color = :purple)
+    vline!(plt, [first_pension + 0.5], label = "Lump-sum", color = :purple)
 else
-    vline!(plt, [first_pension + 0.5], label = "Receive Penion: Monthly", color = :green)
+    vline!(plt, [first_pension + 0.5], label = "Monthly", color = :green)
 end
 plot!(age, consumption, label = "consumption")
 findall(x -> x < para.c_min, consumption)
+asset
