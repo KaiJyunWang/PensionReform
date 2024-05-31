@@ -27,16 +27,65 @@ function stair(x::Float64; c::Array{Float64,1} = c)
 end
 
 
-para = @with_kw (γ = 3.0, η = 0.7, r = 0.04, β = 0.98, ξ_nodes = 20, ϵ = range(0.0, 3.0, 5),
-    T = T, μ = mort, init_t = 40, ρ = 0.97, σ = 0.02, asset = collect(range(0.0, 25.0, 15)), 
-    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.1, δ = [0.7, 0.024, -0.0002], φ_l = 0.5, θ_b = 0.0, κ = 2.0,
-    aime = profile, plan = collect(1:4), ra = 65, τ = 0.12, lme = profile)
+para = @with_kw (γ = 3.0, η = 0.6, r = 0.03, β = 0.97, ξ_nodes = 20, ϵ = range(0.0, 3.0, 5),
+    T = T, μ = mort, init_t = 40, ρ = 0.97, σ = 0.04, asset = collect(range(0.0, 25.0, 15)), 
+    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.1, δ = [0.7, 0.02, -0.0003], φ_l = 20.0, θ_b = 0.6, κ = 2.0,
+    aime = profile, plan = collect(1:4), ra = 65, τ = 0.12, lme = profile, fra = 65)
 para = para()
 
-v = zeros(length(para.asset), length(para.ϵ), length(para.wy), length(para.plan), length(para.work), length(para.aime), length(para.lme), para.T-para.init_t+2)
-function solve(v::Array{Float64,8};para)
+#split into two parts
+#working age and post-retired
+function solve_retired_with_pension(;para)
     #parameters
-    (; γ, η, r, β, ξ_nodes, ϵ, T, μ, init_t, ρ, σ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme) = para
+    (; γ, η, r, β, ξ_nodes, ϵ, T, μ, init_t, ρ, σ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
+    #settings
+    #all possible pension benefits in monthly
+    rra = collect(-5:5) |> x -> CuArray(x)
+    monthly_benefit = zeros(length(aime), length(wy), length(-5:5)) |> x -> CuArray(x)
+    @tullio monthly_benefit[y,m,q] = max(wy[m]*aime[y]*0.00775+3, wy[m]*aime[y]*0.0155)*(1+0.04*(rra[q]))
+    consumption = zeros(length(asset), length(asset), length(aime), length(wy), length(-5:5)) |> x -> CuArray(x)
+    utility = zeros(size(consumption)) |> x -> CuArray(x)
+    bequest = zeros(length(asset)) |> x -> CuArray(x)
+    candidate = zeros(length(asset), length(aime), length(wy), length(-5:5), length(asset)) |> x -> CuArray(x)
+
+    vr = zeros(length(asset), length(aime), length(wy), length(-5:5), T-ra+7) 
+    policy = zeros(length(asset), length(aime), length(wy), length(-5:5), T-ra+6) 
+
+    for s in tqdm(1:T-ra+6)
+        t = T-s+1
+        mort = μ[t]
+        new_vr = vr[:,:,:,:,T-ra+6-s+2] |> x -> CuArray(x)
+        
+        @tullio consumption[i,j,y,m,q] = (1+$r)*asset[i] + monthly_benefit[y,m,q] - asset[j]
+        
+        @tullio utility[i,j,y,m,q] = consumption[i,j,y,m,q] ≥ $c_min ? consumption[i,j,y,m,q]^(1-$γ)/(1-$γ) : -1e200
+        @tullio bequest[j] = ($θ_b*($κ+asset[j])^(1-$γ))/(1-$γ)
+        @tullio candidate[i,y,m,q,j] = utility[i,j,y,m,q] + (1-$mort)*$β*new_vr[j,y,m,q] + $β*bequest[j]*$mort
+
+        can = Array(candidate)
+
+        for state in CartesianIndices(vr[:,:,:,:,T-ra+6-s+1])
+            vr[state, T-ra+6-s+1], ind = findmax(can[state,:])
+            policy[state, T-ra+6-s+1] = asset[ind]
+        end
+    end
+    return (policy = policy, vr = vr)
+end
+
+srwp = solve_retired_with_pension(;para)
+asset = zeros(para.T-para.ra+7)
+asset[1] = 20.0
+srwp.policy
+for t in 1:para.T-para.ra+5+1
+    a_func = LinearInterpolation((para.asset, para.aime, para.wy, collect(-5:5)), srwp.policy[:,:,:,:,t])
+    asset[t+1] = a_func(asset[t], 4.0, 20, 2)
+end
+
+
+v = zeros(length(para.asset), length(para.ϵ), length(para.wy), length(para.plan), length(para.work), length(para.aime), length(para.lme), para.T-para.init_t+2)
+function solve_pension_window(v::Array{Float64,8};para)
+    #parameters
+    (; γ, η, r, β, ξ_nodes, ϵ, T, μ, init_t, ρ, σ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra, benefit) = para
     #settings
     ξ, w = gausshermite(ξ_nodes)
     ξ = ξ |> x -> CuArray(x)
@@ -46,7 +95,6 @@ function solve(v::Array{Float64,8};para)
     for t in 2:T-init_t+2
         ϵ_grid[:,t] = range(ρ*ϵ_grid[1,t-1] + sqrt(2)*σ*minimum(ξ), ρ*ϵ_grid[end,t-1] + sqrt(2)*σ*maximum(ξ), length(ϵ))
     end
-    
 
     #policy function 1: asset, 2: work, 3: plan
     policy = zeros(length(asset), length(ϵ), length(wy), length(plan), length(work), length(aime), length(lme), T-init_t+1, 3)
@@ -77,10 +125,11 @@ function solve(v::Array{Float64,8};para)
 
     #benefit schemes
     #2: lump-sum pension, 3: monthly pension
+    #pinned down the benefit
     @tullio lumpsum_benefit[y,m,q] = (plan[q] == 2)*min(max(wy[m], 2*wy[m]-15), 50)*aime[y]
     @tullio monthly_benefit[y,m,q] = (plan[q] == 3)*max(wy[m]*aime[y]*0.00775+3, wy[m]*aime[y]*0.0155)
     #adjustment cost of working
-    @tullio adj_cost[k,x] = (1-$φ_l*(work[k]-work[x] == 1))
+    @tullio adj_cost[k,x] = $φ_l*(work[k]-work[x] == 1)
     #extra benefit
     function ex_benefit(t::Int64, ra::Int64, type::Int64)
         if type == 2
@@ -121,9 +170,9 @@ function solve(v::Array{Float64,8};para)
         #net income
         @tullio income[l,m,k,q,y] = wage[l]*work[k] + benefit[y,m,q] - pension_tax[l]*work[k]*(plan[q] == 1)
         #consumption
-        @tullio consumption[i,j,l,m,k,x,q,y] = (1+$r)*asset[i] + income[l,m,k,q,y] + adj_cost[k,x] - asset[j]
+        @tullio consumption[i,j,l,m,k,x,q,y] = (1+$r)*asset[i] + income[l,m,k,q,y] - adj_cost[k,x] - asset[j]
         #leisure
-        @tullio leisure[k] = (28-20*work[k])^(1-$η)
+        @tullio leisure[k] = (1-260/364*work[k])^(1-$η)
         #consumption floor
         @tullio utility[i,j,k,l,m,x,q,y] = consumption[i,j,l,m,k,x,q,y] ≥ $c_min ? (((consumption[i,j,l,m,k,x,q,y]^($η))*leisure[k])^(1-$γ))/(1-$γ) : -1e200
         #bequest
@@ -162,7 +211,7 @@ function solve(v::Array{Float64,8};para)
     return (policy = policy, ϵ_grid = ϵ_grid, v = v)
 end
 
-sol = solve(v; para)
+sol = solve_pension_window(v; para)
 
 #simulation
 ϵ = zeros(para.T-para.init_t+1)
@@ -174,13 +223,13 @@ for t in 2:para.T-para.init_t+1
 end
 asset = zeros(para.T-para.init_t+2)
 #initial asset
-asset[1] = 4.0
+asset[1] = 10.0
 work = zeros(para.T-para.init_t+2)
 #initial working status
 work[1] = 1
 wy = zeros(para.T-para.init_t+2)
 #initial work years
-wy[1] = 7
+wy[1] = 12
 plan = zeros(para.T-para.init_t+2)
 #initial pension status
 plan[1] = 1
@@ -233,5 +282,3 @@ savefig(plt, "life-cycle.png")
 findall(x -> x < para.c_min, consumption)
 findall(x -> x == 0, work)
 plot(age, value, label = "value")
-#value goes wrong. check the punishment.
-asset
