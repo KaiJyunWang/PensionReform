@@ -41,25 +41,27 @@ function solve_retired_with_pension(;para)
     #settings
     #all possible pension benefits in monthly
     rra = collect(-5:5) |> x -> CuArray(x)
-    monthly_benefit = zeros(length(aime), length(wy), length(-5:5)) |> x -> CuArray(x)
-    @tullio monthly_benefit[y,m,q] = max(wy[m]*aime[y]*0.00775+3, wy[m]*aime[y]*0.0155)*(1+0.04*(rra[q]))
-    consumption = zeros(length(asset), length(asset), length(aime), length(wy), length(-5:5)) |> x -> CuArray(x)
+    wy_rwp = collect(15:30) |> x -> CuArray(x)
+    monthly_benefit = zeros(length(aime), length(wy_rwp), length(-5:5)) |> x -> CuArray(x)
+    @tullio monthly_benefit[y,m,q] = max(wy_rwp[m]*aime[y]*0.00775+3, wy_rwp[m]*aime[y]*0.0155)*(1+0.04*(rra[q]))
+    asset_cua = asset |> x -> CuArray(x)
+    consumption = zeros(length(asset), length(asset), length(aime), length(wy_rwp), length(-5:5)) |> x -> CuArray(x)
     utility = zeros(size(consumption)) |> x -> CuArray(x)
     bequest = zeros(length(asset)) |> x -> CuArray(x)
-    candidate = zeros(length(asset), length(aime), length(wy), length(-5:5), length(asset)) |> x -> CuArray(x)
+    candidate = zeros(length(asset), length(aime), length(wy_rwp), length(-5:5), length(asset)) |> x -> CuArray(x)
 
-    vr = zeros(length(asset), length(aime), length(wy), length(-5:5), T-ra+7) 
-    policy = zeros(length(asset), length(aime), length(wy), length(-5:5), T-ra+6) 
+    vr = zeros(length(asset), length(aime), length(wy_rwp), length(-5:5), T-ra+7) 
+    policy = zeros(length(asset), length(aime), length(wy_rwp), length(-5:5), T-ra+6) 
 
     for s in tqdm(1:T-ra+6)
         t = T-s+1
         mort = μ[t]
         new_vr = vr[:,:,:,:,T-ra+6-s+2] |> x -> CuArray(x)
         
-        @tullio consumption[i,j,y,m,q] = (1+$r)*asset[i] + monthly_benefit[y,m,q] - asset[j]
+        @tullio consumption[i,j,y,m,q] = (1+$r)*asset_cua[i] + monthly_benefit[y,m,q] - asset_cua[j]
         
         @tullio utility[i,j,y,m,q] = consumption[i,j,y,m,q] ≥ $c_min ? consumption[i,j,y,m,q]^(1-$γ)/(1-$γ) : -1e200
-        @tullio bequest[j] = ($θ_b*($κ+asset[j])^(1-$γ))/(1-$γ)
+        @tullio bequest[j] = ($θ_b*($κ+asset_cua[j])^(1-$γ))/(1-$γ)
         @tullio candidate[i,y,m,q,j] = utility[i,j,y,m,q] + (1-$mort)*$β*new_vr[j,y,m,q] + $β*bequest[j]*$mort
 
         can = Array(candidate)
@@ -74,13 +76,16 @@ end
 
 srwp = solve_retired_with_pension(;para)
 asset = zeros(para.T-para.ra+7)
+consumption = zeros(para.T-para.ra+6)
 asset[1] = 20.0
 srwp.policy
 for t in 1:para.T-para.ra+5+1
-    a_func = LinearInterpolation((para.asset, para.aime, para.wy, collect(-5:5)), srwp.policy[:,:,:,:,t])
+    a_func = LinearInterpolation((para.asset, para.aime, collect(15:30), collect(-5:5)), srwp.policy[:,:,:,:,t])
     asset[t+1] = a_func(asset[t], 4.0, 20, 2)
+    consumption[t] = (1+para.r)*asset[t] + max(20*4.0*0.00775+3, 20*4.0*0.0155) - asset[t+1]
 end
-
+plot(asset, label = "asset")
+plot!(consumption, label = "consumption")
 
 v = zeros(length(para.asset), length(para.ϵ), length(para.wy), length(para.plan), length(para.work), length(para.aime), length(para.lme), para.T-para.init_t+2)
 function solve_pension_window(v::Array{Float64,8};para)
