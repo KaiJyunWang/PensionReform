@@ -16,25 +16,286 @@ T = life_ceil([1.5, 1e8, 0.2, 0.0003])
 #profile of aime
 profile = [2.747, 3.48, 4.58]
 
-function stair(x::Float64; c::Array{Float64,1} = c)
-    if x < c[2]
-        return c[1]
-    elseif x < c[3]
-        return c[2]
+function stair(x)
+    if x < profile[2]
+        return profile[1]
+    elseif x < profile[3]
+        return profile[2]
     else
-        return c[3]
+        return profile[3]
     end
 end
-
 
 para = @with_kw (γ = 3.0, η = 0.6, r = 0.03, β = 0.97, ξ_nodes = 20, ϵ = range(0.0, 3.0, 5),
     T = T, μ = mort, init_t = 40, ρ = 0.97, σ = 0.04, asset = collect(range(0.0, 25.0, 15)), 
     work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.1, δ = [0.7, 0.02, -0.0003], φ_l = 20.0, θ_b = 0.6, κ = 2.0,
-    aime = profile, plan = collect(1:4), ra = 65, τ = 0.12, lme = profile, fra = 65)
+    aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 65)
 para = para()
 
-#split into two parts
-#working age and post-retired
+
+function solve(;para)
+    #parameters
+    (; γ, η, r, β, ξ_nodes, ϵ, T, μ, init_t, ρ, σ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
+    #settings
+    ξ, w = gausshermite(ξ_nodes)
+    ξ_cua = CuArray(ξ)
+    w_cua = CuArray(w)
+    ϵ_grid = zeros(length(ϵ), T-init_t+2)
+    ϵ_grid[:,1] = ϵ
+    for t in 2:T-init_t+2
+        ϵ_grid[:,t] = range(ρ*ϵ_grid[1,t-1] + sqrt(2)*σ*minimum(ξ), ρ*ϵ_grid[end,t-1] + sqrt(2)*σ*maximum(ξ), length(ϵ))
+    end
+    real_retire_age = collect(-5:5) |> x -> CuArray(x)
+    wy_retire_over_15 = collect(15:30) |> x -> CuArray(x)
+
+    #policy functions 
+    policy_retire_with_pension = zeros(length(asset), length(aime), length(wy), length(real_retire_age), T-ra+5)
+    policy_retire_no_pension = zeros(length(asset), T-ra+5)
+    policy_window = zeros(length(asset), length(ϵ), length(wy), length(work), length(aime), length(lme), length(real_retire_age), 3)
+    policy_before_window = zeros(length(asset), length(ϵ), length(wy), length(work), length(aime), length(lme), length(init_t:ra-6), 2)
+
+    #value functions
+    v_retire_with_pension = zeros(length(asset), length(aime), length(wy), length(real_retire_age), T-ra+6)
+    v_retire_no_pension = zeros(length(asset), T-ra+6) 
+    v_window = zeros(length(asset), length(ϵ), length(wy), length(work), length(aime), length(lme), length(real_retire_age))
+    v_before_window = zeros(length(asset), length(ϵ), length(wy), length(work), length(aime), length(lme), length(init_t:ra-6)) 
+
+    #Note: The first period of the retired value function is the retirement age - 4. At least one period in window.
+
+
+    #candidate path matrices
+    candidate_retire_with_pension = zeros(length(asset), length(aime), length(wy), length(real_retire_age), length(asset)) |> x -> CuArray(x)
+    candidate_retire_no_pension = zeros(length(asset), length(asset)) |> x -> CuArray(x)
+    candidate_window = zeros(length(asset), length(ϵ), length(wy), length(work), length(aime), length(lme), length(asset), length(work), length(plan)) |> x -> CuArray(x)
+    candidate_before_window = zeros(length(asset), length(ϵ), length(wy), length(work), length(aime), length(lme), length(asset), length(work)) |> x -> CuArray(x)
+    
+    #states
+    asset_cua = asset |> x -> CuArray(x)
+    work_cua = work |> x -> CuArray(x)
+    wy_cua = wy |> x -> CuArray(x)
+    plan_cua = plan |> x -> CuArray(x)
+    aime_cua = aime |> x -> CuArray(x)
+    lme_cua = lme |> x -> CuArray(x)
+
+    #computing matrices
+    #consumption
+    retired_with_pension_consumption = zeros(length(asset), length(asset), length(aime), length(wy), length(real_retire_age)) |> x -> CuArray(x)
+    retired_no_pension_consumption = zeros(length(asset), length(asset)) |> x -> CuArray(x)
+    window_consumption = zeros(length(asset), length(asset), length(ϵ), length(wy), length(work), length(work), length(plan), length(aime)) |> x -> CuArray(x)
+    before_window_consumption = zeros(length(asset), length(asset), length(ϵ), length(work), length(work)) |> x -> CuArray(x)
+
+    #utility
+    retired_with_pension_utility = zeros(size(retired_with_pension_consumption)) |> x -> CuArray(x)
+    retired_no_pension_utility = zeros(size(retired_no_pension_consumption)) |> x -> CuArray(x)
+    window_utility = zeros(size(window_consumption)) |> x -> CuArray(x)
+    before_window_utility = zeros(size(before_window_consumption)) |> x -> CuArray(x)
+    
+    #others
+    bequest = zeros(length(asset)) |> x -> CuArray(x)
+    adj_cost = zeros(length(work), length(work)) |> x -> CuArray(x)
+    monthly_benefit = zeros(length(aime), length(wy), length(real_retire_age)) |> x -> CuArray(x)
+    lumpsum_benefit = zeros(length(aime), length(wy), length(real_retire_age)) |> x -> CuArray(x)
+    f_ϵ = zeros(length(ϵ), ξ_nodes) |> x -> CuArray(x)
+    wage = zeros(length(ϵ)) |> x -> CuArray(x)
+    c_aime = zeros(length(ϵ)) |> x -> CuArray(x)
+    pension_tax = zeros(length(ϵ)) |> x -> CuArray(x)
+    f_lme = zeros(length(lme), length(ϵ), length(work)) |> x -> CuArray(x)
+    f_wy = zeros(length(wy), length(work)) |> x -> CuArray(x)
+    less_5y_f_aime = zeros(length(aime), length(ϵ), length(wy), length(work)) |> x -> CuArray(x)
+    more_5y_f_aime = zeros(length(aime), length(lme), length(ϵ), length(work)) |> x -> CuArray(x)
+    f_aime = zeros(length(aime), length(lme), length(ϵ), length(wy), length(work)) |> x -> CuArray(x)
+    f_utility = zeros(length(asset), length(work), length(ϵ), length(wy), length(aime), length(lme), length(plan), ξ_nodes) |> x -> CuArray(x)
+    f_utility_before_window = zeros(length(asset), length(work), length(ϵ), length(wy), length(aime), length(lme), ξ_nodes) |> x -> CuArray(x)
+    EV = zeros(length(asset), length(work), length(ϵ), length(wy), length(aime), length(lme), length(plan)) |> x -> CuArray(x)
+    EV_before_window = zeros(length(asset), length(work), length(ϵ), length(wy), length(aime), length(lme)) |> x -> CuArray(x)
+    
+    #pre-computing
+    #retired monthly benefit
+    @tullio monthly_benefit[y,m,q] = max(wy_cua[m]*aime[y]*0.00775+3, wy_cua[m]*aime[y]*0.0155)*(1+0.04*(real_retire_age[q]))
+    #lump-sum benefit
+    @tullio lumpsum_benefit[y,m,q] = min(max(wy_cua[m], 2*wy_cua[m]-15), 50)*aime[y]*(1+0.04*(real_retire_age[q]))
+    #adjustment cost of working
+    @tullio adj_cost[k,x] = φ_l*(work_cua[k]-work_cua[x] == 1)
+    #bequest
+    @tullio bequest[j] = $β*($θ_b*($κ+asset_cua[j])^(1-$γ))/(1-$γ)
+    #future work years
+    @tullio f_wy[m,k] = min(wy_cua[m]+work_cua[k], $wy_ceil)
+
+    
+    #VFI for retired with pension
+    println("VFI for retired with pension")
+    for s in tqdm(1:T-ra+5)
+        t = T-s+1
+        mort = μ[t]
+        new_vr = v_retire_with_pension[:,:,:,:,end-s+1] |> x -> CuArray(x)
+        
+        @tullio retired_with_pension_consumption[i,j,y,m,q] = (1+$r)*asset_cua[i] + monthly_benefit[y,m,q] - asset_cua[j]
+        @tullio retired_with_pension_utility[i,j,y,m,q] = retired_with_pension_consumption[i,j,y,m,q] ≥ $c_min ? retired_with_pension_consumption[i,j,y,m,q]^(1-$γ)/(1-$γ) : -1e200
+        @tullio candidate_retire_with_pension[i,y,m,q,j] = retired_with_pension_utility[i,j,y,m,q] + (1-$mort)*$β*new_vr[j,y,m,q] + bequest[j]*$mort
+
+        can_retire_with_pension = Array(candidate_retire_with_pension)
+
+        for state in CartesianIndices(v_retire_with_pension[:,:,:,:,T-ra+5-s+1])
+            v_retire_with_pension[state, T-ra+5-s+1], ind = findmax(can_retire_with_pension[state,:])
+            policy_retire_with_pension[state, T-ra+5-s+1] = asset[ind]
+        end
+    end
+    
+    #VFI for retired with no pension
+    println("VFI for retired with no pension")
+    for s in tqdm(1:T-ra+5)
+        t = T-s+1
+        mort = μ[t]
+        new_vr = v_retire_no_pension[:,end-s+1] |> x -> CuArray(x)
+        
+        @tullio retired_no_pension_consumption[i,j] = (1+$r)*asset_cua[i] - asset_cua[j]
+        @tullio retired_no_pension_utility[i,j] = retired_no_pension_consumption[i,j] ≥ $c_min ? retired_no_pension_consumption[i,j]^(1-$γ)/(1-$γ) : -1e200
+        @tullio candidate_retire_no_pension[i,j] = retired_no_pension_utility[i,j] + (1-$mort)*$β*new_vr[j] + bequest[j]*$mort
+
+        can_retire_no_pension = Array(candidate_retire_no_pension)
+
+        for state in CartesianIndices(v_retire_no_pension[:,T-ra+5-s+1])
+            v_retire_no_pension[state, T-ra+5-s+1], ind = findmax(can_retire_no_pension[state,:])
+            policy_retire_no_pension[state, T-ra+5-s+1] = asset[ind]
+        end
+    end
+    
+    #VFI for pension window
+    println("VFI for pension window")
+    for s in tqdm(1:length(real_retire_age))
+        t = ra+6-s
+        wy_comp = δ[1] + δ[2]*t + δ[3]*t^2
+        mort = μ[t]
+        if s != 1
+            v_func = LinearInterpolation((asset, ϵ_grid[:,t-init_t+2], wy, work, aime, lme), v_window[:,:,:,:,:,:,end-s+2])
+        end
+        ϵ_cua = CuArray(ϵ_grid[:,t-init_t+1])
+        v_retire_no_pension_cua = CuArray(v_retire_no_pension[:,length(real_retire_age)-s+2])
+        v_retire_with_pension_cua = CuArray(v_retire_with_pension[:,:,:,length(real_retire_age)-s+1,length(real_retire_age)-s+2])
+        
+        #future ϵ, avg. 
+        @tullio f_ϵ[l,h] = $ρ * ϵ_cua[l] + sqrt(2)* $σ * ξ_cua[h]
+        #minimum wage is 2.747
+        @tullio wage[l] = max(2.747, exp(ϵ_cua[l] + $wy_comp))
+        @tullio force_retire[l] = (exp(ϵ_cua[l] + $wy_comp) < 2.747)&&($t ≥ $fra)
+        #current wage transformed into aime
+        @tullio c_aime[l] = (wage[l] < aime[2] ? aime[1] : (wage[l] < aime[3] ? aime[2] : aime[3])) 
+        @tullio pension_tax[l] = c_aime[l]*0.2*$τ
+        @tullio window_consumption[i,j,l,m,k,x,q,y] = (1+$r)*asset_cua[i] + wage[l]*work_cua[k] + (plan_cua[q] == 2)*lumpsum_benefit[y,m,12-$s] + (wy_cua[m]≥15)*(plan_cua[q]==3)*monthly_benefit[y,m,12-$s] - pension_tax[l]*work_cua[k]*(plan_cua[q] == 1) - adj_cost[k,x] - asset_cua[j]
+        @tullio window_utility[i,j,l,m,k,x,q,y] = window_consumption[i,j,l,m,k,x,q,y] ≥ $c_min ? (((window_consumption[i,j,l,m,k,x,q,y]^($η))*((1-260/364*work_cua[k])^(1-$η)))^(1-$γ))/(1-$γ) : -1e200
+        #future lowest monthly wage
+        @tullio f_lme[z,l,k] = min(4.58, max(lme_cua[z], wage[l]*work_cua[k]))
+        #future aime
+        @tullio less_5y_f_aime[y,l,m,k] = c_aime[l]*work_cua[k]/(wy_cua[m]+work_cua[k]) + wy_cua[m]/(wy_cua[m]+work_cua[k])*aime_cua[y]
+        @tullio more_5y_f_aime[y,z,l,k] = aime_cua[y] + 0.2*max(0, c_aime[l]*work_cua[k]-lme_cua[z])
+        @tullio f_aime[y,z,l,m,k] = (((wy_cua[m] + work_cua[k]) > 0) ? (wy_cua[m] < 5 ? less_5y_f_aime[y,l,m,k] : more_5y_f_aime[y,z,l,k]) : 2.747)
+        @tullio f_aime[y,z,l,m,k] = min(4.58, f_aime[y,z,l,m,k])
+        if s == 1
+            #70 must be the last year of working
+            @tullio f_utility[j,k,l,m,y,z,q,h] = (plan_cua[q] == 1 ? -1e200 : ((plan_cua[q] == 3)&&(wy_cua[m]≥15) ? v_retire_with_pension_cua[j,y,m] : v_retire_no_pension_cua[j]))
+        else
+            @tullio f_utility[j,k,l,m,y,z,q,h] = (force_retire[l]&&(plan_cua[q] == 1) ? v_func(asset[j], f_ϵ[l,h], f_wy[m,k], work_cua[k], f_aime[y,z,l,m,k], f_lme[z,l,k]) : ((plan_cua[q] == 3)&&(wy_cua[m]≥15) ? v_retire_with_pension_cua[j,y,m] : v_retire_no_pension_cua[j]))
+        end
+        #EV
+        @tullio EV[j,k,l,m,y,z,q] = w_cua[h]*f_utility[j,k,l,m,y,z,q,h]
+        @tullio candidate_window[i,l,m,x,y,z,j,k,q] = (force_retire[l]&&(work_cua[k] == 1) ? -1e200 : window_utility[i,j,l,m,k,x,q,y] + (1-$mort)*$β*EV[j,k,l,m,y,z,q] + $mort*bequest[j])
+
+        can_window = Array(candidate_window)
+
+        for state in CartesianIndices(v_window[:,:,:,:,:,:,length(real_retire_age)-s+1])
+            v_window[state, length(real_retire_age)-s+1], ind = findmax(can_window[state,:,:,:])
+            policy_window[state, length(real_retire_age)-s+1,1] = asset[ind[1]]
+            policy_window[state, length(real_retire_age)-s+1,2] = work[ind[2]]
+            policy_window[state, length(real_retire_age)-s+1,3] = plan[ind[3]]
+        end
+    end
+
+    #VFI for before window
+    println("VFI for before window")
+    #last period before window
+    t = ra-6
+    mort = μ[t]
+    wy_comp = δ[1] + δ[2]*t + δ[3]*t^2
+    v_func = LinearInterpolation((asset, ϵ_grid[:,t-init_t+2], wy, work, aime, lme), v_window[:,:,:,:,:,:,1])
+    ϵ_cua = CuArray(ϵ_grid[:,t-init_t+1])
+    #future ϵ, avg. 
+    @tullio f_ϵ[l,h] = $ρ * ϵ_cua[l] + sqrt(2)* $σ * ξ_cua[h]
+    #minimum wage is 2.747
+    @tullio wage[l] = max(2.747, exp(ϵ_cua[l] + $wy_comp))
+    #current wage transformed into aime
+    @tullio c_aime[l] = (wage[l] < aime[2] ? aime[1] : (wage[l] < aime[3] ? aime[2] : aime[3]))
+    @tullio pension_tax[l] = c_aime[l]*0.2*$τ
+    @tullio before_window_consumption[i,j,l,k,x] = (1+$r)*asset_cua[i] + wage[l]*work_cua[k] - pension_tax[l]*work_cua[k] - adj_cost[k,x] - asset_cua[j]
+    @tullio before_window_utility[i,j,l,k,x] = before_window_consumption[i,j,l,k,x] ≥ $c_min ? (((before_window_consumption[i,j,l,k,x]^($η))*((1-260/364*work_cua[k])^(1-$η)))^(1-$γ))/(1-$γ) : -1e200
+    #future lowest monthly wage
+    @tullio f_lme[z,l,k] = min(4.58, max(lme[z], wage[l]*work_cua[k]))
+    #future aime
+    @tullio less_5y_f_aime[y,l,m,k] = c_aime[l]*work[k]/(wy[m]+work[k]) + wy[m]/(wy[m]+work[k])*aime[y]
+    @tullio more_5y_f_aime[y,z,l,k] = aime[y] + 0.2*max(0, c_aime[l]*work[k]-lme[z])
+    @tullio f_aime[y,z,l,m,k] = (((wy[m] + work[k]) > 0) ? (wy[m] < 5 ? less_5y_f_aime[y,l,m,k] : more_5y_f_aime[y,z,l,k]) : 2.747)
+    @tullio f_aime[y,z,l,m,k] = min(4.58, f_aime[y,z,l,m,k])
+    @tullio f_utility_before_window[j,k,l,m,y,z,h] = v_func(asset[j], f_ϵ[l,h], f_wy[m,k], work[k], f_aime[y,z,l,m,k], f_lme[z,l,k])
+    #EV
+    @tullio EV_before_window[j,k,l,m,y,z] = w_cua[h]*f_utility_before_window[j,k,l,m,y,z,h]
+    @tullio candidate_before_window[i,l,m,x,y,z,j,k] = before_window_utility[i,j,l,k,x] + (1-$mort)*$β*EV_before_window[j,k,l,m,y,z] + $mort*bequest[j] 
+
+    can_before_window = Array(candidate_before_window)
+
+    for state in CartesianIndices(v_before_window[:,:,:,:,:,:,end])
+        v_window[state, end], ind = findmax(can_before_window[state,:,:])
+        policy_before_window[state, end,1] = asset[ind[1]]
+        policy_before_window[state, end,2] = work[ind[2]]
+    end
+    
+    for s in tqdm(2:length(init_t:ra-6))
+        t = ra-5-s
+        mort = μ[t]
+        wy_comp = δ[1] + δ[2]*t + δ[3]*t^2
+        v_func = LinearInterpolation((asset, ϵ_grid[:,t-init_t+2], wy, work, aime, lme), v_before_window[:,:,:,:,:,:,t-init_t+2])
+        ϵ_cua = CuArray(ϵ_grid[:,t-init_t+1])
+        #future ϵ, avg. 
+        @tullio f_ϵ[l,h] = $ρ * ϵ_cua[l] + sqrt(2)* $σ * ξ_cua[h]
+        #minimum wage is 2.747
+        @tullio wage[l] = max(2.747, exp(ϵ_cua[l] + $wy_comp))
+        #current wage transformed into aime
+        @tullio c_aime[l] = (wage[l] < aime[2] ? aime[1] : (wage[l] < aime[3] ? aime[2] : aime[3]))
+        @tullio pension_tax[l] = c_aime[l]*0.2*$τ
+        @tullio before_window_consumption[i,j,l,k,x] = (1+$r)*asset_cua[i] + wage[l]*work_cua[k] - pension_tax[l]*work_cua[k] - adj_cost[k,x] - asset_cua[j]
+        @tullio before_window_utility[i,j,l,k,x] = before_window_consumption[i,j,l,k,x] ≥ $c_min ? (((before_window_consumption[i,j,l,k,x]^($η))*((1-260/364*work_cua[k])^(1-$η)))^(1-$γ))/(1-$γ) : -1e200
+        #future lowest monthly wage
+        @tullio f_lme[z,l,k] = min(4.58, max(lme[z], wage[l]*work_cua[k]))
+        #future aime
+        @tullio less_5y_f_aime[y,l,m,k] = c_aime[l]*work[k]/(wy[m]+work[k]) + wy[m]/(wy[m]+work[k])*aime[y]
+        @tullio more_5y_f_aime[y,z,l,k] = aime[y] + 0.2*max(0, c_aime[l]*work[k]-lme[z])
+        @tullio f_aime[y,z,l,m,k] = (((wy[m] + work[k]) > 0) ? (wy[m] < 5 ? less_5y_f_aime[y,l,m,k] : more_5y_f_aime[y,z,l,k]) : 2.747)
+        @tullio f_aime[y,z,l,m,k] = min(4.58, f_aime[y,z,l,m,k])
+        #@tullio f_utility_before_window[j,k,l,m,y,z,h] = v_func(asset[j], f_ϵ[l,h], f_wy[m,k], work_cua[k], f_aime[y,z,l,m,k], f_lme[z,l,k])
+        #EV
+        @tullio EV_before_window[j,k,l,m,y,z] = w_cua[h]*f_utility_before_window[j,k,l,m,y,z,h]
+        @tullio candidate_before_window[i,l,m,x,y,z,j,k] = before_window_utility[i,j,l,k,x] + (1-$mort)*$β*EV_before_window[j,k,l,m,y,z] + $mort*bequest[j] 
+
+        can_before_window = Array(candidate_before_window)
+
+        for state in CartesianIndices(v_before_window[:,:,:,:,:,:,t-init_t+1])
+            v_before_window[state, t-init_t+1], ind = findmax(can_before_window[state,:,:])
+            policy_before_window[state, t-init_t+1,1] = asset[ind[1]]
+            policy_before_window[state, t-init_t+1,2] = work[ind[2]]
+        end
+    end
+
+    solution = @with_kw (srwp = policy_retire_with_pension, srnp = policy_retire_no_pension, sw = policy_window, sbw = policy_before_window, vrwp = v_retire_with_pension, vrnp = v_retire_no_pension, vw = v_window, vbw = v_before_window, ϵ_grid = ϵ_grid)
+    return solution()
+end 
+
+solution = solve(;para)
+
+function simulate(solution; para, n, seed, )
+    #parameters
+    (; γ, η, r, β, ξ_nodes, ϵ, T, μ, init_t, ρ, σ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
+    (; srwp, srnp, sw, sbw, vrwp, vrnp, vw, vbw, ϵ_grid) = solution
+
+end
+
 function solve_retired_with_pension(;para)
     #parameters
     (; γ, η, r, β, ξ_nodes, ϵ, T, μ, init_t, ρ, σ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
@@ -74,35 +335,62 @@ function solve_retired_with_pension(;para)
     return (policy = policy, vr = vr)
 end
 
-srwp = solve_retired_with_pension(;para)
-asset = zeros(para.T-para.ra+7)
-consumption = zeros(para.T-para.ra+6)
-asset[1] = 20.0
-srwp.policy
-for t in 1:para.T-para.ra+5+1
-    a_func = LinearInterpolation((para.asset, para.aime, collect(15:30), collect(-5:5)), srwp.policy[:,:,:,:,t])
-    asset[t+1] = a_func(asset[t], 4.0, 20, 2)
-    consumption[t] = (1+para.r)*asset[t] + max(20*4.0*0.00775+3, 20*4.0*0.0155) - asset[t+1]
-end
-plot(asset, label = "asset")
-plot!(consumption, label = "consumption")
+srwp, vrwp = solve_retired_with_pension(;para)
 
-v = zeros(length(para.asset), length(para.ϵ), length(para.wy), length(para.plan), length(para.work), length(para.aime), length(para.lme), para.T-para.init_t+2)
-function solve_pension_window(v::Array{Float64,8};para)
+#solve retire without pension
+function solve_retired_no_pension(;para)
+    #parameters
+    (; γ, η, r, β, ξ_nodes, ϵ, T, μ, init_t, ρ, σ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
+    #settings
+    #all possible pension benefits in monthly
+    asset_cua = asset |> x -> CuArray(x)
+    consumption = zeros(length(asset), length(asset)) |> x -> CuArray(x)
+    utility = zeros(size(consumption)) |> x -> CuArray(x)
+    bequest = zeros(length(asset)) |> x -> CuArray(x)
+    candidate = zeros(length(asset), length(asset)) |> x -> CuArray(x)
+
+    vr = zeros(length(asset), T-ra+7) 
+    policy = zeros(length(asset), T-ra+6) 
+
+    for s in tqdm(1:T-ra+6)
+        t = T-s+1
+        mort = μ[t]
+        new_vr = vr[:,T-ra+6-s+2] |> x -> CuArray(x)
+        
+        @tullio consumption[i,j] = (1+$r)*asset_cua[i] - asset_cua[j]
+        @tullio utility[i,j] = consumption[i,j] ≥ $c_min ? consumption[i,j]^(1-$γ)/(1-$γ) : -1e200
+        @tullio bequest[j] = ($θ_b*($κ+asset_cua[j])^(1-$γ))/(1-$γ)
+        @tullio candidate[i,j] = utility[i,j] + (1-$mort)*$β*new_vr[j] + $β*bequest[j]*$mort
+
+        can = Array(candidate)
+
+        for state in CartesianIndices(vr[:,T-ra+6-s+1])
+            vr[state, T-ra+6-s+1], ind = findmax(can[state,:])
+            policy[state, T-ra+6-s+1] = asset[ind]
+        end
+    end
+    return (policy = policy, vr = vr)
+end
+
+srnp, vrnp = solve_retired_no_pension(;para)
+
+function solve_pension_window(vrwp, vrnp, ϵ_grid;para)
     #parameters
     (; γ, η, r, β, ξ_nodes, ϵ, T, μ, init_t, ρ, σ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra, benefit) = para
     #settings
+    window = collect(-5:5) |> x -> CuArray(x)
     ξ, w = gausshermite(ξ_nodes)
     ξ = ξ |> x -> CuArray(x)
     w = w |> x -> CuArray(x)
-    ϵ_grid = zeros(length(ϵ), T-init_t+2)
+    ϵ_grid = zeros(length(ϵ), length(window))
     ϵ_grid[:,1] = ϵ
-    for t in 2:T-init_t+2
+    for t in 2:length(window)
         ϵ_grid[:,t] = range(ρ*ϵ_grid[1,t-1] + sqrt(2)*σ*minimum(ξ), ρ*ϵ_grid[end,t-1] + sqrt(2)*σ*maximum(ξ), length(ϵ))
     end
 
     #policy function 1: asset, 2: work, 3: plan
-    policy = zeros(length(asset), length(ϵ), length(wy), length(plan), length(work), length(aime), length(lme), T-init_t+1, 3)
+    policy_window = zeros(length(asset), length(ϵ), length(wy), length(plan), length(work), length(aime), length(lme), length(window), 3)
+    v = zeros(length(asset), length(ϵ), length(wy), length(plan), length(work), length(aime), length(lme), length(window))
     #computing matrices
     lumpsum_benefit = zeros(length(aime), length(wy), length(plan))
     monthly_benefit = zeros(length(aime), length(wy), length(plan))
@@ -153,15 +441,18 @@ function solve_pension_window(v::Array{Float64,8};para)
             return -1.0
         end
     end
+
     
-    for s in tqdm(1:T-init_t+1)
-        t = T-s+1
+    for s in tqdm(1:length(window))
+        t = ra+6-s
         wy_comp = δ[1] + δ[2]*t + δ[3]*t^2
         #extra_benefit should be pinned down    
         @tullio extra_benefit[q] = ex_benefit($t, $ra, plan[q])
         mort = μ[t]
-        v_func = LinearInterpolation((asset, ϵ_grid[:,t-init_t+2], wy, plan, work, aime, lme), v[:,:,:,:,:,:,:,t-init_t+2])
+        v_func = LinearInterpolation((asset, ϵ_grid[:,end], wy, plan, work, aime, lme), v[:,:,:,:,:,:,:,end-s+1])
         ϵ_cua = CuArray(ϵ_grid[:,t-init_t+1])
+        vrnp_cua = CuArray(vrnp[:,ra+5+s])
+        vrwp_cua = CuArray(vrwp[:,:,:,:,ra+5+s])
         
         #future ϵ, avg. 
         @tullio f_ϵ[l,h] = $ρ * ϵ_cua[l] + sqrt(2)* $σ * ξ[h]
@@ -195,8 +486,13 @@ function solve_pension_window(v::Array{Float64,8};para)
         @tullio f_aime[y,z,l,m,k] = (((wy[m] + work[k]) > 0) ? (wy[m] < 5 ? less_5y_f_aime[y,l,m,k] : more_5y_f_aime[y,z,l,k]) : 2.747)
         @tullio f_aime[y,z,l,m,k] = min(4.58, f_aime[y,z,l,m,k])
         #EV part
-        #try gaussian quadrature
-        @tullio f_utility[j,k,l,m,y,z,q,h] = v_func(asset[j], f_ϵ[l,h], f_wy[m,k], plan[q], work[k], f_aime[y,z,l,m,k], f_lme[z,l,k])
+        if s == 1
+            #70 must be the last year of working
+            @tullio f_utility[j,k,l,m,y,z,q,h] = (n[k] == 1 ? -1e200 : (q == 3 ? vrwp[j,y,m] : vrnp[j]))
+        else
+            @tullio f_utility[j,k,l,m,y,z,q,h] = (n[k] == 1 ? v_func(asset[j], f_ϵ[l,h], f_wy[m,k], plan[q], work[k], f_aime[y,z,l,m,k], f_lme[z,l,k]) : (q == 3 ? vrwp[j,y,m] : vrnp[j]))
+        end
+        #Gauss Quadrature
         @tullio EV[j,k,l,m,y,z,q] = w[h]*f_utility[j,k,l,m,y,z,q,h]
 
 
@@ -214,6 +510,13 @@ function solve_pension_window(v::Array{Float64,8};para)
         end
     end
     return (policy = policy, ϵ_grid = ϵ_grid, v = v)
+end
+
+#no plan
+function solve_before_window(;para)
+    #parameters
+    (; γ, η, r, β, ξ_nodes, ϵ, T, μ, init_t, ρ, σ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra, benefit) = para
+    
 end
 
 sol = solve_pension_window(v; para)
