@@ -1,3 +1,8 @@
+#-------------------------------------------
+# This is the solver and simulattion file of a benchmark model. 
+# The agents do not anticipate the reform. 
+# Execute version 1.9.2.
+#-------------------------------------------
 include("Mortality.jl")
 using .Mortality
 include("PensionBenefit.jl")
@@ -39,7 +44,6 @@ function solve(;para)
         ϵ_grid[:,t] = range(ρ*ϵ_grid[1,t-1] + sqrt(2)*σ*minimum(ξ), ρ*ϵ_grid[end,t-1] + sqrt(2)*σ*maximum(ξ), length(ϵ))
     end
     real_retire_age = cu(collect(-5:5))
-    wy_retire_over_15 = cu(collect(15:30))
 
     #policy functions 
     policy_retire_with_pension = zeros(length(asset), length(aime), length(wy), length(real_retire_age), T-ra+5)
@@ -77,7 +81,7 @@ function solve(;para)
         new_vr = v_retire_with_pension[:,:,:,:,end-s+1] |> x -> CuArray(x)
         
         @tullio retired_with_pension_consumption[i,j,y,m,q] := (1+$r)*asset_cua[i] + monthly_benefit[y,m,q] - asset_cua[j]
-        @tullio retired_with_pension_utility[i,j,y,m,q] := retired_with_pension_consumption[i,j,y,m,q] ≥ $c_min ? retired_with_pension_consumption[i,j,y,m,q]^(1-$γ)/(1-$γ) : -1e38
+        @tullio retired_with_pension_utility[i,j,y,m,q] := retired_with_pension_consumption[i,j,y,m,q] ≥ $c_min ? retired_with_pension_consumption[i,j,y,m,q]^((1-$γ)*$η)/(1-$γ) : -1e38
         @tullio candidate_retire_with_pension[i,y,m,q,j] := retired_with_pension_utility[i,j,y,m,q] + (1-$mort)*$β*new_vr[j,y,m,q] + bequest[j]*$mort
 
         can_retire_with_pension = Array(candidate_retire_with_pension)
@@ -95,7 +99,7 @@ function solve(;para)
         new_vr = v_retire_no_pension[:,end-s+1] |> x -> CuArray(x)
         
         @tullio retired_no_pension_consumption[i,j] := (1+$r)*asset_cua[i] - asset_cua[j]
-        @tullio retired_no_pension_utility[i,j] := retired_no_pension_consumption[i,j] ≥ $c_min ? retired_no_pension_consumption[i,j]^(1-$γ)/(1-$γ) : -1e38
+        @tullio retired_no_pension_utility[i,j] := retired_no_pension_consumption[i,j] ≥ $c_min ? retired_no_pension_consumption[i,j]^((1-$γ)*$η)/(1-$γ) : -1e38
         @tullio candidate_retire_no_pension[i,j] := retired_no_pension_utility[i,j] + (1-$mort)*$β*new_vr[j] + bequest[j]*$mort
 
         can_retire_no_pension = Array(candidate_retire_no_pension)
@@ -391,7 +395,7 @@ end
 
 para = @with_kw (γ = 3.0, η = 0.99, r = 0.02, β = 0.98, ξ_nodes = 20, ϵ = range(0.0, 3.0, 5),
     T = T, μ = mort, init_t = 40, ρ = 0.97, σ = 0.06, asset = collect(range(0.0, 30.0, 21)), 
-    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.1, δ = [-1.0, 0.06, -0.0006], φ_l = 20.0, θ_b = 5.0, κ = 2.0,
+    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.1, δ = [-1.0, 0.06, -0.0006], φ_l = 5.0, θ_b = 5.0, κ = 2.0,
     aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 65)
 para = para()
 

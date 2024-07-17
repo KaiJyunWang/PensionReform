@@ -1,5 +1,5 @@
 module PensionBenefit
-export benefit, tax
+export benefit, tax, ReformScheme
 
 #pension benefit formula
 #unit: month wage
@@ -22,4 +22,10 @@ function tax(aime::Float64, p::Int, τ::Float64 = 0.12)
     end
 end
 
+#reform schemes
+struct ReformScheme
+    τ #pension tax rate
+    reduction #pension benefit reduction rate 
+    sra #standard retirement age
+end
 end
