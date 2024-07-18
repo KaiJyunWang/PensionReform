@@ -27,5 +27,6 @@ struct ReformScheme
     τ #pension tax rate
     reduction #pension benefit reduction rate 
     sra #standard retirement age
+    fra #forced retirement age
 end
 end

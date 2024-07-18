@@ -1,5 +1,5 @@
 #-------------------------------------------
-# This is the solver and simulattion file of a benchmark model. 
+# This is the solver and simulation file of a benchmark model. 
 # The agents do not anticipate the reform. 
 # Execute version 1.9.2.
 #-------------------------------------------
