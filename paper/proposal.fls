@@ -1,6 +1,6 @@
-PWD c:\Users\kevin\pension_reform\paper
+PWD c:\Users\kevin\pension_reform\PensionReform\paper
 INPUT C:\Users\kevin\AppData\Local\MiKTeX\miktex\data\le\pdftex\pdflatex.fmt
-INPUT c:\Users\kevin\pension_reform\paper\proposal.tex
+INPUT c:\Users\kevin\pension_reform\PensionReform\paper\proposal.tex
 OUTPUT proposal.log
 INPUT C:\Users\kevin\MiKTeX\tex\latex\base\article.cls
 INPUT C:\Users\kevin\MiKTeX\tex\latex\base\article.cls

@@ -349,12 +349,17 @@ updating rule is
     \begin{split}
         \pi_{t+1} 
         &= \frac{\Pr(z_t, R_t\mid H)\pi_t}{\Pr(z_t, R_t\mid H)\pi_t + \Pr(z_t, R_t\mid L)(1-\pi_t)} \\
-        &= \frac{\Pr(z_t\mid R_t,H)\Pr(R_t\mid H)\pi_t}{\Pr(z_t\mid R_t,H)\Pr(R_t\mid H)\pi_t + \Pr(z_t\mid R_t,L)\Pr(R_t\mid L)(1-\pi_t)}.
+        &= \frac{\Pr(z_t\mid R_t,H)\Pr(R_t\mid H)\pi_t}{\Pr(z_t\mid R_t,H)\Pr(R_t\mid H)\pi_t + \Pr(z_t\mid R_t,L)\Pr(R_t\mid L)(1-\pi_t)}\\
+        &= \frac{p(\#(z_t=1);\abs{z_t},p_{z,H})p_H \pi_t}{p(\#(z_t=1);\abs{z_t},p_{z,H})p_H \pi_t + p(\#(z_t=1);\abs{z_t},p_{z,L})p_L(1-\pi_t)},
     \end{split}
 \end{equation}
 where \(z_t\) stands for the independent and identically 
-distributed drawn sequence of news in period \(t\). The reformed 
-state is treated as an absorbing state. 
+distributed drawn sequence of news in period \(t\), $\#$ is 
+the counting function, $\abs{\cdot}$ is the length of the 
+sequence and $p_{z,H}, p_{z,L}$ are the prbablities of 
+positive news under the different types of governments. 
+The reformed state is treated as an absorbing state for both 
+types of the governments. 
 
 Let \(\beta\) be the time preference, we may write the 
 individual's problem recursively as
