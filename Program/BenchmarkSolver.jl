@@ -399,7 +399,7 @@ para = @with_kw (γ = 3.0, η = 0.99, r = 0.02, β = 0.98, ξ_nodes = 20, ϵ = r
     aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 65)
 para = para()
 
-sol = solve(;para)
+@elapsed sol = solve(;para)
 int_sol = integrate_sol(sol;para)
 init_para = @with_kw (μ_a = 3.0, σ_a = 5.0, μ_ϵ = 0.1, σ_ϵ = 0.2, p_work = 0.7, p_wy = rand(11) |> (x -> x ./ sum(x)), μ_aime = 2.8, σ_aime = 0.5, μ_lme = 2.8, σ_lme = 0.1)
 init_para = init_para()
