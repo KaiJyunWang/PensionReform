@@ -145,17 +145,17 @@ function solve(;para)
             @tullio f_utility[b,j,k,l,m,y,z,q,h] := (plan_cua[q] == 1 ? -1e38 : ((plan_cua[q] == 3)&&(wy_cua[m]≥15) ? v_retire_with_pension_cua[b,j,y,m] : v_retire_no_pension_cua[b,j])) (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), q in 1:length(plan), h in 1:ξ_nodes)
         else
             #for itp purpose
-            @tullio f_β_s[b,j,k,l,m,y,z,h] := β_cua[b] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
+            @tullio f_type_s[b,j,k,l,m,y,z,h] := type_cua[b] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
             @tullio f_asset_s[b,j,k,l,m,y,z,h] := asset_cua[j] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
             @tullio f_ϵ_s[b,j,k,l,m,y,z,h] := f_ϵ[l,h] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
             @tullio f_wy_s[b,j,k,l,m,y,z,h] := f_wy[m,k] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
             @tullio f_work_s[b,j,k,l,m,y,z,h] := work_cua[k] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
             @tullio f_aime_s[b,j,k,l,m,y,z,h] := f_aime[y,z,l,m,k] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
             @tullio f_lme_s[b,j,k,l,m,y,z,h] := f_lme[z,l,k] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
-            f_β_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s = parent(f_β_s), parent(f_asset_s), parent(f_ϵ_s), parent(f_wy_s), parent(f_work_s), parent(f_aime_s), parent(f_lme_s) 
-            f_β_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s = cu(f_β_s), cu(f_asset_s), cu(f_ϵ_s), cu(f_wy_s), cu(f_work_s), cu(f_aime_s), cu(f_lme_s)
+            f_type_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s = parent(f_type_s), parent(f_asset_s), parent(f_ϵ_s), parent(f_wy_s), parent(f_work_s), parent(f_aime_s), parent(f_lme_s) 
+            f_type_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s = cu(f_type_s), cu(f_asset_s), cu(f_ϵ_s), cu(f_wy_s), cu(f_work_s), cu(f_aime_s), cu(f_lme_s)
 
-            f_v_work = cu_v_func.(f_β_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s)
+            f_v_work = cu_v_func.(f_type_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s)
             @tullio f_utility[b,j,k,l,m,y,z,q,h] := ((force_retire[l] == 0)&&(plan_cua[q] == 1) ? f_v_work[b,j,k,l,m,y,z,h] : ((plan_cua[q] == 3)&&(wy_cua[m]≥15) ? v_retire_with_pension_cua[b,j,y,m] : v_retire_no_pension_cua[b,j]))
         end
         #EV
@@ -198,17 +198,17 @@ function solve(;para)
     @tullio f_aime[y,z,l,m,k] := (((wy_cua[m] + work_cua[k]) > 0) ? (wy_cua[m] < 5 ? less_5y_f_aime[y,l,m,k] : more_5y_f_aime[y,z,l,k]) : 2.747)
     @tullio f_aime[y,z,l,m,k] = min(4.58, f_aime[y,z,l,m,k])
 
-    @tullio f_β_s[b,j,k,l,m,y,z,h] := β_cua[b] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
+    @tullio f_type_s[b,j,k,l,m,y,z,h] := type_cua[b] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
     @tullio f_asset_s[b,j,k,l,m,y,z,h] := asset_cua[j] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
     @tullio f_ϵ_s[b,j,k,l,m,y,z,h] := f_ϵ[l,h] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
     @tullio f_wy_s[b,j,k,l,m,y,z,h] := f_wy[m,k] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
     @tullio f_work_s[b,j,k,l,m,y,z,h] := work_cua[k] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
     @tullio f_aime_s[b,j,k,l,m,y,z,h] := f_aime[y,z,l,m,k] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
     @tullio f_lme_s[b,j,k,l,m,y,z,h] := f_lme[z,l,k] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
-    f_β_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s = parent(f_β_s), parent(f_asset_s), parent(f_ϵ_s), parent(f_wy_s), parent(f_work_s), parent(f_aime_s), parent(f_lme_s)
-    f_β_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s = cu(f_β_s), cu(f_asset_s), cu(f_ϵ_s), cu(f_wy_s), cu(f_work_s), cu(f_aime_s), cu(f_lme_s)
+    f_type_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s = parent(f_type_s), parent(f_asset_s), parent(f_ϵ_s), parent(f_wy_s), parent(f_work_s), parent(f_aime_s), parent(f_lme_s)
+    f_type_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s = cu(f_type_s), cu(f_asset_s), cu(f_ϵ_s), cu(f_wy_s), cu(f_work_s), cu(f_aime_s), cu(f_lme_s)
 
-    f_utility_before_window = cu_v_func.(f_β_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s)
+    f_utility_before_window = cu_v_func.(f_type_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s)
     
     #EV
     @tullio EV_before_window[b,j,k,l,m,y,z] := w_cua[h]*f_utility_before_window[b,j,k,l,m,y,z,h]
@@ -226,7 +226,7 @@ function solve(;para)
         t = ra-5-s
         mort = μ[t]
         wy_comp = δ[1] + δ[2]*t + δ[3]*t^2
-        v_func = LinearInterpolation((Float32.(β), Float32.(asset), Float32.(ϵ_grid[:,t-init_t+2]), Float32.(wy), Float32.(work), Float32.(aime), Float32.(lme)), v_before_window[:,:,:,:,:,:,:,end-s+2])
+        v_func = LinearInterpolation((Float32.(type), Float32.(asset), Float32.(ϵ_grid[:,t-init_t+2]), Float32.(wy), Float32.(work), Float32.(aime), Float32.(lme)), v_before_window[:,:,:,:,:,:,:,end-s+2])
         cu_v_func = cu(v_func)
         ϵ_cua = CuArray(ϵ_grid[:,t-init_t+1])
         #future ϵ, avg. 
@@ -246,17 +246,17 @@ function solve(;para)
         @tullio f_aime[y,z,l,m,k] := (((wy_cua[m] + work_cua[k]) > 0) ? (wy_cua[m] < 5 ? less_5y_f_aime[y,l,m,k] : more_5y_f_aime[y,z,l,k]) : 2.747)
         @tullio f_aime[y,z,l,m,k] = min(4.58, f_aime[y,z,l,m,k])
 
-        @tullio f_β_s[b,j,k,l,m,y,z,h] := β_cua[b] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
+        @tullio f_type_s[b,j,k,l,m,y,z,h] := type_cua[b] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
         @tullio f_asset_s[b,j,k,l,m,y,z,h] := asset_cua[j] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
         @tullio f_ϵ_s[b,j,k,l,m,y,z,h] := f_ϵ[l,h] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
         @tullio f_wy_s[b,j,k,l,m,y,z,h] := f_wy[m,k] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
         @tullio f_work_s[b,j,k,l,m,y,z,h] := work_cua[k] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
         @tullio f_aime_s[b,j,k,l,m,y,z,h] := f_aime[y,z,l,m,k] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
         @tullio f_lme_s[b,j,k,l,m,y,z,h] := f_lme[z,l,k] (b in 1:length(β), j in 1:length(asset), k in 1:length(work), l in 1:length(ϵ), m in 1:length(wy), y in 1:length(aime), z in 1:length(lme), h in 1:ξ_nodes)
-        f_β_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s = parent(f_β_s), parent(f_asset_s), parent(f_ϵ_s), parent(f_wy_s), parent(f_work_s), parent(f_aime_s), parent(f_lme_s)
-        f_β_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s = cu(f_β_s), cu(f_asset_s), cu(f_ϵ_s), cu(f_wy_s), cu(f_work_s), cu(f_aime_s), cu(f_lme_s)
+        f_type_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s = parent(f_type_s), parent(f_asset_s), parent(f_ϵ_s), parent(f_wy_s), parent(f_work_s), parent(f_aime_s), parent(f_lme_s)
+        f_type_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s = cu(f_type_s), cu(f_asset_s), cu(f_ϵ_s), cu(f_wy_s), cu(f_work_s), cu(f_aime_s), cu(f_lme_s)
 
-        f_utility_before_window = cu_v_func.(f_β_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s)
+        f_utility_before_window = cu_v_func.(f_type_s, f_asset_s, f_ϵ_s, f_wy_s, f_work_s, f_aime_s, f_lme_s)
         #EV
         @tullio EV_before_window[b,j,k,l,m,y,z] := w_cua[h]*f_utility_before_window[b,j,k,l,m,y,z,h]
         @tullio candidate_before_window[b,i,l,m,x,y,z,j,k] := before_window_utility[b,i,j,l,k,x] + (1-$mort)*β_cua[b]*EV_before_window[b,j,k,l,m,y,z] + $mort*bequest[b,j]
@@ -398,13 +398,13 @@ end
 
 HAP = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, β = [0.945, 0.859, 1.124], ξ_nodes = 20, ϵ = range(0.0, 3.0, 5),
     T = T, μ = mort, init_t = 25, ρ = 0.97, σ = 0.06, asset = collect(range(0.0, 60.0, 21)), 
-    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-0.8, 0.06, -0.0006], φ_l = 5.0, θ_b = 400, κ = 700,
+    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-0.8, 0.06, -0.0006], φ_l = 5.0, θ_b = 1000, κ = 200,
     aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 65)
 HAP = HAP() 
 
 solution = solve(para = HAP)
 int_sol = integrate_sol(solution; para = HAP)
-init_para = @with_kw (p_type = [0.267, 0.615, 1-0.267-0.615], μ_a = 3.0, σ_a = 1e-5, μ_ϵ = 0.1, σ_ϵ = HAP.σ/sqrt(1-HAP.ρ^2), p_work = 1.0, p_wy = [1], μ_aime = 2.747, σ_aime = 1e-5, μ_lme = 2.747, σ_lme = 1e-5)
+init_para = @with_kw (p_type = [0.267, 0.615, 1-0.267-0.615], μ_a = 3.0, σ_a = 1e-5, μ_ϵ = 0.0, σ_ϵ = HAP.σ/sqrt(1-HAP.ρ^2), p_work = 1.0, p_wy = [1], μ_aime = 2.747, σ_aime = 1e-5, μ_lme = 2.747, σ_lme = 1e-5)
 init_para = init_para()
 dists = initial_distribution(;para = HAP, init_para = init_para)
 
@@ -426,7 +426,7 @@ group = groupby(clean_df, :id)
 retire_ages = combine(group, :retire_age => last => :retire_age, :work_year => last => :work_year)
 
 begin
-    k = 7
+    k = 1
     fig, ax = lines(group[k].age, group[k].asset, label = "Asset")
     lines!(ax, group[k].age, group[k].wage, label = "Wage")
     vspan!(ax, filter(row -> row.work == 0, group[k]).age .- 0.5, filter(row -> row.work == 0, group[k]).age .+ 0.5, color = (:gray, 0.3), label = "Unemployed")
@@ -437,3 +437,4 @@ begin
 end
 hist(filter(row -> row.work_year != 0, retire_ages).retire_age, bins = 10, 
     title = "Retirement Age", normalization = :pdf, bar_labels = :values)
+
