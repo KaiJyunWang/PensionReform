@@ -11,12 +11,12 @@ using .PensionBenefit
 using Distributions, LinearAlgebra, CairoMakie, FastGaussQuadrature
 using Parameters, Random, Tables, Profile, DataFrames
 using CUDA, CUDAKernels, KernelAbstractions, Tullio, CUDA.Adapt
-using BenchmarkTools, Interpolations, KernelDensity
+using BenchmarkTools, Interpolations
 using JLD2, LaTeXStrings
 
 #life-cycle problem of pension solver
-mort = mortality([1.5, 1e8, 0.2, 0.0003])
-T = life_ceil([1.5, 1e8, 0.2, 0.0003])
+mort = mortality([1.13, 5e4, 0.1, 0.0002])
+T = life_ceil([1.13, 5e4, 0.1, 0.0002])
 
 #profile of aime
 profile = [2.747, 3.48, 4.58]
@@ -58,7 +58,8 @@ function solve(;para)
     v_before_window = zeros(length(β), length(asset), length(ϵ), length(wy), length(work), length(aime), length(lme), length(init_t:ra-6))  
 
     #states
-    β_cua, η_cua, asset_cua, work_cua, wy_cua, plan_cua, aime_cua, lme_cua = cu(β), cu(η), cu(asset), cu(work), cu(wy), cu(plan), cu(aime), cu(lme)
+    type = collect(1:3)
+    type_cua, β_cua, η_cua, asset_cua, work_cua, wy_cua, plan_cua, aime_cua, lme_cua = cu(type), cu(β), cu(η), cu(asset), cu(work), cu(wy), cu(plan), cu(aime), cu(lme)
 
     f_v_work = zeros(length(β), length(asset), length(work), length(ϵ), length(wy), length(aime), length(lme), ξ_nodes) |> x -> CuArray(x)
     #pre-computing
@@ -115,7 +116,7 @@ function solve(;para)
         wy_comp = δ[1] + δ[2]*t + δ[3]*t^2
         mort = μ[t]
         if s != 1 
-            v_func = LinearInterpolation((Float32.(β), Float32.(asset), Float32.(ϵ_grid[:,t-init_t+2]), Float32.(wy), Float32.(work), Float32.(aime), Float32.(lme)), v_window[:,:,:,:,:,:,:,end-s+2])
+            v_func = LinearInterpolation((Float32.(type), Float32.(asset), Float32.(ϵ_grid[:,t-init_t+2]), Float32.(wy), Float32.(work), Float32.(aime), Float32.(lme)), v_window[:,:,:,:,:,:,:,end-s+2])
             cu_v_func = cu(v_func)
         end 
         ϵ_cua = CuArray(ϵ_grid[:,t-init_t+1])
@@ -177,7 +178,7 @@ function solve(;para)
     t = ra-6
     mort = μ[t]
     wy_comp = δ[1] + δ[2]*t + δ[3]*t^2
-    v_func = LinearInterpolation((Float32.(β), Float32.(asset), Float32.(ϵ_grid[:,t-init_t+2]), Float32.(wy), Float32.(work), Float32.(aime), Float32.(lme)), v_window[:,:,:,:,:,:,:,1])
+    v_func = LinearInterpolation((Float32.(type), Float32.(asset), Float32.(ϵ_grid[:,t-init_t+2]), Float32.(wy), Float32.(work), Float32.(aime), Float32.(lme)), v_window[:,:,:,:,:,:,:,1])
     cu_v_func = cu(v_func)
     ϵ_cua = CuArray(ϵ_grid[:,t-init_t+1])
     #future ϵ, avg. 
@@ -395,15 +396,15 @@ function simulate(;dists, solution, para, n)
     return path()
 end
 
-HAP = @with_kw (γ = 3.0, η = [0.5, 0.7, 0.9], r = 0.02, β = [0.92, 0.98, 1.02], ξ_nodes = 20, ϵ = range(0.0, 3.0, 5),
-    T = T, μ = mort, init_t = 40, ρ = 0.97, σ = 0.06, asset = collect(range(0.0, 30.0, 21)), 
-    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.1, δ = [-1.0, 0.06, -0.0006], φ_l = 5.0, θ_b = 5.0, κ = 2.0,
+HAP = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, β = [0.945, 0.859, 1.124], ξ_nodes = 20, ϵ = range(0.0, 3.0, 5),
+    T = T, μ = mort, init_t = 25, ρ = 0.97, σ = 0.06, asset = collect(range(0.0, 60.0, 21)), 
+    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-0.8, 0.06, -0.0006], φ_l = 5.0, θ_b = 400, κ = 700,
     aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 65)
 HAP = HAP() 
 
 solution = solve(para = HAP)
 int_sol = integrate_sol(solution; para = HAP)
-init_para = @with_kw (p_type = [0.267, 0.615, 1-0.267-0.615], μ_a = 3.0, σ_a = 5.0, μ_ϵ = 0.1, σ_ϵ = 0.2, p_work = 0.7, p_wy = rand(11) |> (x -> x ./ sum(x)), μ_aime = 2.8, σ_aime = 0.5, μ_lme = 2.8, σ_lme = 0.1)
+init_para = @with_kw (p_type = [0.267, 0.615, 1-0.267-0.615], μ_a = 3.0, σ_a = 1e-5, μ_ϵ = 0.1, σ_ϵ = HAP.σ/sqrt(1-HAP.ρ^2), p_work = 1.0, p_wy = [1], μ_aime = 2.747, σ_aime = 1e-5, μ_lme = 2.747, σ_lme = 1e-5)
 init_para = init_para()
 dists = initial_distribution(;para = HAP, init_para = init_para)
 
@@ -417,20 +418,22 @@ df = DataFrame(id = vec(transpose(repeat(collect(1:n),1,HAP.T-HAP.init_t+1))), a
     retire_age = vec(transpose(repeat(path.retire_age, 1, HAP.T-HAP.init_t+1))), value = vec(transpose(path.v_path)), 
     type = vec(transpose(repeat(path.type, 1, HAP.T-HAP.init_t+1))))
 
-list = filter(row -> row.value < -1e36, df).id |> unique
+list = filter(row -> row.value < -1e30, df).id |> unique
 dirty_df = filter(row -> row.id in list, df)
 clean_df = filter(row -> !(row.id in list), df)
 
 group = groupby(clean_df, :id)
 retire_ages = combine(group, :retire_age => last => :retire_age, :work_year => last => :work_year)
 
-k = 135
-fig, ax = lines(group[k].age, group[k].asset, label = "Asset")
-lines!(ax, group[k].age, group[k].wage, label = "Wage")
-vspan!(ax, filter(row -> row.work == 0, group[k]).age .- 0.5, filter(row -> row.work == 0, group[k]).age .+ 0.5, color = (:gray, 0.3), label = "Unemployed")
-vlines!(ax, group[k].retire_age[1], color = (group[k].plan[end] == 2 ? :purple : :green), label = (group[k].plan[end] == 2 ? "Pension Type 2" : "Pension Type 3")) 
-lines!(ax, group[k].age, group[k].consumption, label = "Consumption")
-fig[1,2] = Legend(fig, ax, framevisible = false)
-fig
+begin
+    k = 7
+    fig, ax = lines(group[k].age, group[k].asset, label = "Asset")
+    lines!(ax, group[k].age, group[k].wage, label = "Wage")
+    vspan!(ax, filter(row -> row.work == 0, group[k]).age .- 0.5, filter(row -> row.work == 0, group[k]).age .+ 0.5, color = (:gray, 0.3), label = "Unemployed")
+    vlines!(ax, group[k].retire_age[1], color = (group[k].plan[end] == 2 ? :purple : :green), label = (group[k].plan[end] == 2 ? "Pension Type 2" : "Pension Type 3")) 
+    lines!(ax, group[k].age, group[k].consumption, label = "Consumption")
+    fig[1,2] = Legend(fig, ax, framevisible = false)
+    fig
+end
 hist(filter(row -> row.work_year != 0, retire_ages).retire_age, bins = 10, 
     title = "Retirement Age", normalization = :pdf, bar_labels = :values)
