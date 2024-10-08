@@ -18,6 +18,20 @@ using JLD2, LaTeXStrings
 mort = mortality([1.13, 5e4, 0.1, 0.0002])
 T = life_ceil([1.13, 5e4, 0.1, 0.0002])
 
+# age distribution
+function survival(t::Int) 
+    if t ≤ 1 
+        return 1 
+    else 
+        return prod(1 .- mort[1:t-1]) 
+    end
+end
+
+function age_dist(t::Int, t_0::Int=25)
+    return survival(t)/sum([survival(i) for i in t_0:T])
+end
+
+
 #profile of aime
 profile = [2.747, 3.48, 4.58]
 
@@ -33,7 +47,7 @@ end
 
 function solve(;para) 
     #parameters
-    (; γ, η, r, β, ξ_nodes, ϵ, T, μ, init_t, ρ, σ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
+    (; γ, η, r, ρ, σ, β, ξ_nodes, ϵ, T, μ, init_t, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
     #initialization 
     ξ, w = gausshermite(ξ_nodes)
     ξ_cua = cu(ξ)
@@ -276,7 +290,7 @@ end
 
 function integrate_sol(sol;para)
     #parameters
-    (; γ, η, r, β, ξ_nodes, ϵ, T, μ, init_t, ρ, σ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
+    (; γ, η, r, ρ, σ, β, ξ_nodes, ϵ, T, μ, init_t, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
     (; ϵ_grid, policy_before_window, policy_window, policy_retire_no_pension, policy_retire_with_pension, v_before_window, v_window, v_retire_no_pension, v_retire_with_pension) = sol
     real_retire_age = collect(-5:5)
 
@@ -312,7 +326,7 @@ end
 
 function initial_distribution(;para, init_para)
     #parameters
-    (; γ, η, r, β, ξ_nodes, ϵ, T, μ, init_t, ρ, σ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
+    (; γ, η, r, ρ, σ, β, ξ_nodes, ϵ, T, μ, init_t, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
     (; p_type, μ_a, σ_a, μ_ϵ, σ_ϵ, p_work, p_wy, μ_aime, σ_aime, μ_lme, σ_lme) = init_para
 
     ξ, w = gausshermite(ξ_nodes)
@@ -332,7 +346,7 @@ end
 
 function simulate(;dists, solution, para, n)
     #parameters
-    (; γ, η, r, β, ξ_nodes, ϵ, T, μ, init_t, ρ, σ, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
+    (; γ, η, r, ρ, σ, β, ξ_nodes, ϵ, T, μ, init_t, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
     (; type_dist, asset_dist, ϵ_dist, work_dist, wy_dist, aime_dist, lme_dist, ξ_dist) = dists
     (; policy_asset, policy_work, policy_plan, ϵ_grid, v) = solution
 
@@ -383,7 +397,7 @@ function simulate(;dists, solution, para, n)
         @tullio more_5y_f_aime[i] := aime_path[i,$s-1] + 0.2*max(0, c_aime[i]*work_path[i,$s]-lme_path[i,$s-1])
         @tullio aime_path[i,$s] = (((wy_path[i,$s-1] + work_path[i,$s]) > 0) ? (wy_path[i,$s-1] < 5 ? less_5y_f_aime[i] : more_5y_f_aime[i]) : 2.747)
         @tullio aime_path[i,$s] = min(4.58, aime_path[i,$s])
-        @tullio retire_age[i] = (plan_path[i,$s] > plan_path[i,$s-1] ? $s+$init_t-2 : retire_age[i])
+        @tullio retire_age[i] = (plan_path[i,$s] > plan_path[i,$s-1] ? min($s+$init_t-2, 70) : retire_age[i])
         @tullio monthly_benefit[i] := max(wy_path[i,$s-1]*aime_path[i,$s-1]*0.00775+3, wy_path[i,$s-1]*aime_path[i,$s-1]*0.0155)*(1+0.04*(retire_age[i]-$ra))
         @tullio lumpsum_benefit[i] := min(max(wy_path[i,$s-1], 2*wy_path[i,$s-1]-15), 50)*aime_path[i,$s-1]*(1+0.04*(retire_age[i]-$ra))
         @tullio adj_cost[i] := $φ_l*(work_path[i,$s]-work_path[i,$s-1] == 1)
@@ -396,10 +410,10 @@ function simulate(;dists, solution, para, n)
     return path()
 end
 
-HAP = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, β = [0.945, 0.859, 1.124], ξ_nodes = 20, ϵ = range(0.0, 3.0, 5),
-    T = T, μ = mort, init_t = 25, ρ = 0.97, σ = 0.06, asset = collect(range(0.0, 60.0, 21)), 
-    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-0.8, 0.06, -0.0006], φ_l = 5.0, θ_b = 1000, κ = 200,
-    aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 65)
+HAP = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
+    ϵ = range(-2*σ/sqrt(1-ρ^2), 2*σ/sqrt(1-ρ^2), 5), T = T, μ = mort, init_t = 25, asset = collect(range(0.0, 90.0, 31)), 
+    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.4, 0.13, -0.001], φ_l = 5.0, θ_b = 1000, κ = 700,
+    aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 130)
 HAP = HAP() 
 
 solution = solve(para = HAP)
@@ -418,7 +432,7 @@ df = DataFrame(id = vec(transpose(repeat(collect(1:n),1,HAP.T-HAP.init_t+1))), a
     retire_age = vec(transpose(repeat(path.retire_age, 1, HAP.T-HAP.init_t+1))), value = vec(transpose(path.v_path)), 
     type = vec(transpose(repeat(path.type, 1, HAP.T-HAP.init_t+1))))
 
-list = filter(row -> row.value < -1e30, df).id |> unique
+list = filter(row -> row.value < -1e20, df).id |> unique
 dirty_df = filter(row -> row.id in list, df)
 clean_df = filter(row -> !(row.id in list), df)
 
@@ -426,7 +440,7 @@ group = groupby(clean_df, :id)
 retire_ages = combine(group, :retire_age => last => :retire_age, :work_year => last => :work_year)
 
 begin
-    k = 1
+    k = 2
     fig, ax = lines(group[k].age, group[k].asset, label = "Asset")
     lines!(ax, group[k].age, group[k].wage, label = "Wage")
     vspan!(ax, filter(row -> row.work == 0, group[k]).age .- 0.5, filter(row -> row.work == 0, group[k]).age .+ 0.5, color = (:gray, 0.3), label = "Unemployed")
@@ -435,6 +449,13 @@ begin
     fig[1,2] = Legend(fig, ax, framevisible = false)
     fig
 end
-hist(filter(row -> row.work_year != 0, retire_ages).retire_age, bins = 10, 
+hist(filter(row -> row.work_year != 0, retire_ages).retire_age,
     title = "Retirement Age", normalization = :pdf, bar_labels = :values)
 
+begin
+    k = 4
+    fig, ax = lines(group[k].age, group[k].wage, label = "Wage")
+    fig
+end
+
+# simulation 
