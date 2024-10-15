@@ -15,8 +15,8 @@ using BenchmarkTools, Interpolations
 using JLD2, LaTeXStrings
 
 #life-cycle problem of pension solver
-mort = mortality([1.13, 5e4, 0.1, 0.0002])
-T = life_ceil([1.13, 5e4, 0.1, 0.0002])
+mort = mortality([1.13, 64201, 0.1, 0.0002])
+T = life_ceil([1.13, 64201, 0.1, 0.0002])
 
 # age distribution
 function survival(t::Int) 
@@ -78,7 +78,7 @@ function solve(;para)
     f_v_work = zeros(length(β), length(asset), length(work), length(ϵ), length(wy), length(aime), length(lme), ξ_nodes) |> x -> CuArray(x)
     #pre-computing
     #retired monthly benefit
-    @tullio monthly_benefit[y,m,q] := max(wy_cua[m]*aime[y]*0.00775+3, wy_cua[m]*aime[y]*0.0155)*(1+0.04*(real_retire_age[q]))
+    @tullio monthly_benefit[y,m,q] := 12*max(wy_cua[m]*aime[y]*0.00775+3, wy_cua[m]*aime[y]*0.0155)*(1+0.04*(real_retire_age[q]))
     #lump-sum benefit
     @tullio lumpsum_benefit[y,m,q] := min(max(wy_cua[m], 2*wy_cua[m]-15), 50)*aime[y]*(1+0.04*(real_retire_age[q]))
     #adjustment cost of working
@@ -144,8 +144,8 @@ function solve(;para)
         @tullio force_retire[l] := (exp(ϵ_cua[l] + $wy_comp) < 2.747)&&($t ≥ $fra)
         #current wage transformed into aime
         @tullio c_aime[l] := (wage[l] < aime[2] ? aime[1] : (wage[l] < aime[3] ? aime[2] : aime[3])) 
-        @tullio pension_tax[l] := c_aime[l]*0.2*$τ
-        @tullio window_consumption[i,j,l,m,k,x,q,y] := (1+$r)*asset_cua[i] + wage[l]*work_cua[k] + (plan_cua[q] == 2)*lumpsum_benefit[y,m,12-$s] + (wy_cua[m]≥15)*(plan_cua[q]==3)*monthly_benefit[y,m,12-$s] - pension_tax[l]*work_cua[k]*(plan_cua[q] == 1) - adj_cost[k,x] - asset_cua[j]
+        @tullio pension_tax[l] := c_aime[l]*0.2*$τ*12
+        @tullio window_consumption[i,j,l,m,k,x,q,y] := (1+$r)*asset_cua[i] + 12*wage[l]*work_cua[k] + (plan_cua[q] == 2)*lumpsum_benefit[y,m,12-$s] + (wy_cua[m]≥15)*(plan_cua[q]==3)*monthly_benefit[y,m,12-$s] - pension_tax[l]*work_cua[k]*(plan_cua[q] == 1) - adj_cost[k,x] - asset_cua[j]
         @tullio window_utility[b,i,j,l,m,k,x,q,y] := (window_consumption[i,j,l,m,k,x,q,y] ≥ $c_min ? (((window_consumption[i,j,l,m,k,x,q,y]^η_cua[b])*((1-260/364*work_cua[k])^(1-η_cua[b])))^(1-$γ))/(1-$γ) : -1e38)
         #future lowest monthly wage
         @tullio f_lme[z,l,k] := min(4.58, max(lme_cua[z], wage[l]*work_cua[k]))
@@ -201,8 +201,8 @@ function solve(;para)
     @tullio wage[l] := max(2.747, exp(ϵ_cua[l] + $wy_comp))
     #current wage transformed into aime
     @tullio c_aime[l] := (wage[l] < aime[2] ? aime[1] : (wage[l] < aime[3] ? aime[2] : aime[3]))
-    @tullio pension_tax[l] := c_aime[l]*0.2*$τ
-    @tullio before_window_consumption[i,j,l,k,x] := (1+$r)*asset_cua[i] + wage[l]*work_cua[k] - pension_tax[l]*work_cua[k] - adj_cost[k,x] - asset_cua[j]
+    @tullio pension_tax[l] := c_aime[l]*0.2*$τ*12
+    @tullio before_window_consumption[i,j,l,k,x] := (1+$r)*asset_cua[i] + 12*wage[l]*work_cua[k] - pension_tax[l]*work_cua[k] - adj_cost[k,x] - asset_cua[j]
     @tullio before_window_utility[b,i,j,l,k,x] := before_window_consumption[i,j,l,k,x] ≥ $c_min ? (((before_window_consumption[i,j,l,k,x]^η_cua[b])*((1-260/364*work_cua[k])^(1-η_cua[b])))^(1-$γ))/(1-$γ) : -1e38
     #future lowest monthly wage
     @tullio f_lme[z,l,k] := min(4.58, max(lme_cua[z], wage[l]*work_cua[k]))
@@ -249,8 +249,8 @@ function solve(;para)
         @tullio wage[l] := max(2.747, exp(ϵ_cua[l] + $wy_comp))
         #current wage transformed into aime
         @tullio c_aime[l] := (wage[l] < aime[2] ? aime[1] : (wage[l] < aime[3] ? aime[2] : aime[3]))
-        @tullio pension_tax[l] := c_aime[l]*0.2*$τ
-        @tullio before_window_consumption[i,j,l,k,x] := (1+$r)*asset_cua[i] + wage[l]*work_cua[k] - pension_tax[l]*work_cua[k] - adj_cost[k,x] - asset_cua[j]
+        @tullio pension_tax[l] := c_aime[l]*0.2*$τ*12
+        @tullio before_window_consumption[i,j,l,k,x] := (1+$r)*asset_cua[i] + 12*wage[l]*work_cua[k] - pension_tax[l]*work_cua[k] - adj_cost[k,x] - asset_cua[j]
         @tullio before_window_utility[b,i,j,l,k,x] := before_window_consumption[i,j,l,k,x] ≥ $c_min ? (((before_window_consumption[i,j,l,k,x]^η_cua[b])*((1-260/364*work_cua[k])^(1-η_cua[b])))^(1-$γ))/(1-$γ) : -1e38
         #future lowest monthly wage
         @tullio f_lme[z,l,k] := min(4.58, max(lme_cua[z], wage[l]*work_cua[k]))
@@ -382,7 +382,7 @@ function simulate(;dists, solution, para, n)
     for s in 2:T-init_t+2
         t = s + init_t - 2
         wy_comp = δ[1] + δ[2]*t + δ[3]*t^2
-        wage_path[:,s-1] = max.(exp.(ϵ_path[:,s-1] .+ wy_comp), 2.747)
+        wage_path[:,s-1] = max.(exp.(ϵ_path[:,s-1] .+ wy_comp), 2.747)# monthly
         asset_func = LinearInterpolation((collect(1:n_type), asset, ϵ_grid[:,s-1], wy, work, aime, lme, real_retire_age), policy_asset[:,:,:,:,:,:,:,:,s-1])
         work_func = LinearInterpolation((collect(1:n_type), asset, ϵ_grid[:,s-1], wy, work, aime, lme, real_retire_age), policy_work[:,:,:,:,:,:,:,:,s-1])
         plan_func = LinearInterpolation((collect(1:n_type), asset, ϵ_grid[:,s-1], wy, work, aime, lme, real_retire_age), policy_plan[:,:,:,:,:,:,:,:,s-1])
@@ -391,28 +391,28 @@ function simulate(;dists, solution, para, n)
         plan_path[:,s] = round.(plan_func.(type, asset_path[:,s-1], ϵ_path[:,s-1], wy_path[:,s-1], work_path[:,s-1], aime_path[:,s-1], lme_path[:,s-1], min(max(t-ra,-5),5)*ones(n)))
         wy_path[:,s] = min.(wy_path[:,s-1] .+ work_path[:,s-1], wy_ceil)
         @tullio c_aime[i] := (wage_path[i,$s-1] < aime[2] ? aime[1] : (wage_path[i,$s-1] < aime[3] ? aime[2] : aime[3]))
-        pension_tax = c_aime*0.2*τ 
+        pension_tax = c_aime*0.2*τ*12 # per year
         lme_path[:,s] = min.(4.58, max.(lme_path[:,s-1], c_aime .* work_path[:,s])) 
         @tullio less_5y_f_aime[i] := c_aime[i]*work_path[i,$s]/(wy_path[i,$s-1]+work_path[i,$s]) + wy_path[i,$s-1]/(wy_path[i,$s-1]+work_path[i,$s])*aime_path[i,$s-1]
         @tullio more_5y_f_aime[i] := aime_path[i,$s-1] + 0.2*max(0, c_aime[i]*work_path[i,$s]-lme_path[i,$s-1])
         @tullio aime_path[i,$s] = (((wy_path[i,$s-1] + work_path[i,$s]) > 0) ? (wy_path[i,$s-1] < 5 ? less_5y_f_aime[i] : more_5y_f_aime[i]) : 2.747)
         @tullio aime_path[i,$s] = min(4.58, aime_path[i,$s])
         @tullio retire_age[i] = (plan_path[i,$s] > plan_path[i,$s-1] ? min($s+$init_t-2, 70) : retire_age[i])
-        @tullio monthly_benefit[i] := max(wy_path[i,$s-1]*aime_path[i,$s-1]*0.00775+3, wy_path[i,$s-1]*aime_path[i,$s-1]*0.0155)*(1+0.04*(retire_age[i]-$ra))
+        @tullio monthly_benefit[i] := 12*max(wy_path[i,$s-1]*aime_path[i,$s-1]*0.00775+3, wy_path[i,$s-1]*aime_path[i,$s-1]*0.0155)*(1+0.04*(retire_age[i]-$ra))
         @tullio lumpsum_benefit[i] := min(max(wy_path[i,$s-1], 2*wy_path[i,$s-1]-15), 50)*aime_path[i,$s-1]*(1+0.04*(retire_age[i]-$ra))
         @tullio adj_cost[i] := $φ_l*(work_path[i,$s]-work_path[i,$s-1] == 1)
-        consumption_path[:,s-1] = (1+r)*asset_path[:,s-1] + wage_path[:,s-1].*work_path[:,s] + (plan_path[:,s] .== 2).*lumpsum_benefit + (wy_path[:,s-1] .≥ 15).*(plan_path[:,s] .== 3).*monthly_benefit - pension_tax.*work_path[:,s].*(plan_path[:,s] .== 1) - adj_cost - asset_path[:,s]
+        consumption_path[:,s-1] = (1+r)*asset_path[:,s-1] + 12*wage_path[:,s-1].*work_path[:,s] + (plan_path[:,s-1] .== 1) .* (plan_path[:,s] .== 2).*lumpsum_benefit + (wy_path[:,s-1] .≥ 15).*(plan_path[:,s] .== 3).*monthly_benefit - pension_tax.*work_path[:,s].*(plan_path[:,s] .== 1) - adj_cost - asset_path[:,s]
         ϵ_path[:,s] = ρ*ϵ_path[:,s-1] + ξ[:,s-1]
         v_func = LinearInterpolation((collect(1:n_type), asset, ϵ_grid[:,s-1], wy, work, aime, lme, real_retire_age), v[:,:,:,:,:,:,:,:,s-1])
         v_path[:,s-1] = v_func.(type, asset_path[:,s-1], ϵ_path[:,s-1], wy_path[:,s-1], work_path[:,s-1], aime_path[:,s-1], lme_path[:,s-1], min(max(t-ra,-5),5)*ones(n))
     end
-    path = @with_kw (asset_path = asset_path, wage_path = wage_path, work_path = work_path, wy_path = wy_path, aime_path = aime_path, lme_path = lme_path, ϵ_path = ϵ_path, plan_path = plan_path, consumption_path = consumption_path, retire_age = retire_age, v_path = v_path, type = type) 
+    path = @with_kw (asset_path = asset_path, wage_path = 12*wage_path, work_path = work_path, wy_path = wy_path, aime_path = aime_path, lme_path = lme_path, ϵ_path = ϵ_path, plan_path = plan_path, consumption_path = consumption_path, retire_age = retire_age, v_path = v_path, type = type) 
     return path()
 end
 
 HAP = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
-    ϵ = range(-2*σ/sqrt(1-ρ^2), 2*σ/sqrt(1-ρ^2), 5), T = T, μ = mort, init_t = 25, asset = collect(range(0.0, 90.0, 31)), 
-    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.4, 0.13, -0.001], φ_l = 5.0, θ_b = 1000, κ = 700,
+    ϵ = range(-2*σ/sqrt(1-ρ^2), 2*σ/sqrt(1-ρ^2), 5), T = T, μ = mort, init_t = 25, asset = collect(exp.(range(0.0, 7.0, 71)) .- 1), 
+    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
     aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 130)
 HAP = HAP() 
 
@@ -422,7 +422,7 @@ init_para = @with_kw (p_type = [0.267, 0.615, 1-0.267-0.615], μ_a = 3.0, σ_a =
 init_para = init_para()
 dists = initial_distribution(;para = HAP, init_para = init_para)
 
-n = 1000
+n = 5000
 path = simulate(dists = dists, solution = int_sol, para = HAP, n = n)
 df = DataFrame(id = vec(transpose(repeat(collect(1:n),1,HAP.T-HAP.init_t+1))), age = repeat(collect(HAP.init_t:HAP.T),n), 
     asset = vec(transpose(path.asset_path[:,2:end])), wage = vec(transpose(path.wage_path)), 
@@ -432,7 +432,7 @@ df = DataFrame(id = vec(transpose(repeat(collect(1:n),1,HAP.T-HAP.init_t+1))), a
     retire_age = vec(transpose(repeat(path.retire_age, 1, HAP.T-HAP.init_t+1))), value = vec(transpose(path.v_path)), 
     type = vec(transpose(repeat(path.type, 1, HAP.T-HAP.init_t+1))))
 
-list = filter(row -> row.value < -1e20, df).id |> unique
+list = filter(row -> row.consumption < 0, df).id |> unique
 dirty_df = filter(row -> row.id in list, df)
 clean_df = filter(row -> !(row.id in list), df)
 
@@ -440,17 +440,17 @@ group = groupby(clean_df, :id)
 retire_ages = combine(group, :retire_age => last => :retire_age, :work_year => last => :work_year)
 
 begin
-    k = 2
+    k = 7
     fig, ax = lines(group[k].age, group[k].asset, label = "Asset")
     lines!(ax, group[k].age, group[k].wage, label = "Wage")
     vspan!(ax, filter(row -> row.work == 0, group[k]).age .- 0.5, filter(row -> row.work == 0, group[k]).age .+ 0.5, color = (:gray, 0.3), label = "Unemployed")
     vlines!(ax, group[k].retire_age[1], color = (group[k].plan[end] == 2 ? :purple : :green), label = (group[k].plan[end] == 2 ? "Pension Type 2" : "Pension Type 3")) 
-    lines!(ax, group[k].age, group[k].consumption, label = "Consumption")
+    lines!(ax, group[k].age, group[k].consumption, label = "Consumption", color = :red)
     fig[1,2] = Legend(fig, ax, framevisible = false)
     fig
 end
 hist(filter(row -> row.work_year != 0, retire_ages).retire_age,
-    title = "Retirement Age", normalization = :pdf, bar_labels = :values)
+    title = "Retirement Age", normalization = :pdf)
 
 begin
     k = 4
@@ -459,3 +459,21 @@ begin
 end
 
 # simulation 
+# population setting
+N = 1000
+periods = -5:10
+ages = zeros(Int, length(periods), N)
+ages[1,:] = rand(Categorical(age_dist.(25:T)), N) .+ 24 # initial ages
+survive = ones(Int, length(periods), N)
+
+for t in 2:16
+    ages[t,:] = ages[t-1,:] .+ 1 
+    survive[t,:] = (rand(N) .≥ mort[ages[t-1,:]]) .* survive[t-1,:]
+end
+
+# periods -5 : 10
+# reducing benefits 
+df_rb_20 = DataFrame(id = vec(transpose(repeat(1:N, 1, 16))), period = vec(repeat(-5:10, N)), 
+    age = vec(ages), survive = vec(survive))
+
+vscodedisplay(df_rb_20)
