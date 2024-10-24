@@ -15,8 +15,8 @@ using BenchmarkTools, Interpolations
 using JLD2, LaTeXStrings
 
 #life-cycle problem of pension solver
-mort = mortality([1.13, 64201, 0.1, 0.0002])
-T = life_ceil([1.13, 64201, 0.1, 0.0002])
+mort = mortality([1.13, 64200, 0.1, 0.0002])
+T = life_ceil([1.13, 64200, 0.1, 0.0002])
 
 # age distribution
 function survival(t::Int) 
@@ -47,7 +47,7 @@ end
 
 function solve(;para) 
     #parameters
-    (; γ, η, r, ρ, σ, β, ξ_nodes, ϵ, T, μ, init_t, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
+    (; γ, η, r, ρ, σ, β, ξ_nodes, ϵ, T, μ, init_t, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra, reduction) = para
     #initialization 
     ξ, w = gausshermite(ξ_nodes)
     ξ_cua = cu(ξ)
@@ -78,9 +78,9 @@ function solve(;para)
     f_v_work = zeros(length(β), length(asset), length(work), length(ϵ), length(wy), length(aime), length(lme), ξ_nodes) |> x -> CuArray(x)
     #pre-computing
     #retired monthly benefit
-    @tullio monthly_benefit[y,m,q] := 12*max(wy_cua[m]*aime[y]*0.00775+3, wy_cua[m]*aime[y]*0.0155)*(1+0.04*(real_retire_age[q]))
+    @tullio monthly_benefit[y,m,q] := 12*max(wy_cua[m]*aime[y]*0.00775+3, wy_cua[m]*aime[y]*0.0155)*(1+0.04*(real_retire_age[q]))*(1-$reduction)
     #lump-sum benefit
-    @tullio lumpsum_benefit[y,m,q] := min(max(wy_cua[m], 2*wy_cua[m]-15), 50)*aime[y]*(1+0.04*(real_retire_age[q]))
+    @tullio lumpsum_benefit[y,m,q] := min(max(wy_cua[m], 2*wy_cua[m]-15), 50)*aime[y]*(1+0.04*(real_retire_age[q]))*(1-$reduction)
     #adjustment cost of working
     @tullio adj_cost[k,x] := $φ_l*(work_cua[k]-work_cua[x] == 1)
     #bequest
@@ -290,7 +290,7 @@ end
 
 function integrate_sol(sol;para)
     #parameters
-    (; γ, η, r, ρ, σ, β, ξ_nodes, ϵ, T, μ, init_t, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
+    (; γ, η, r, ρ, σ, β, ξ_nodes, ϵ, T, μ, init_t, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra, reduction) = para
     (; ϵ_grid, policy_before_window, policy_window, policy_retire_no_pension, policy_retire_with_pension, v_before_window, v_window, v_retire_no_pension, v_retire_with_pension) = sol
     real_retire_age = collect(-5:5)
 
@@ -326,7 +326,7 @@ end
 
 function initial_distribution(;para, init_para)
     #parameters
-    (; γ, η, r, ρ, σ, β, ξ_nodes, ϵ, T, μ, init_t, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
+    (; γ, η, r, ρ, σ, β, ξ_nodes, ϵ, T, μ, init_t, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra, reduction) = para
     (; p_type, μ_a, σ_a, μ_ϵ, σ_ϵ, p_work, p_wy, μ_aime, σ_aime, μ_lme, σ_lme) = init_para
 
     ξ, w = gausshermite(ξ_nodes)
@@ -344,9 +344,9 @@ function initial_distribution(;para, init_para)
     return dists()
 end
 
-function simulate(;dists, solution, para, n)
+function simulate(;dists, solution, para, n, rng = 9527)
     #parameters
-    (; γ, η, r, ρ, σ, β, ξ_nodes, ϵ, T, μ, init_t, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra) = para
+    (; γ, η, r, ρ, σ, β, ξ_nodes, ϵ, T, μ, init_t, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra, reduction) = para
     (; type_dist, asset_dist, ϵ_dist, work_dist, wy_dist, aime_dist, lme_dist, ξ_dist) = dists
     (; policy_asset, policy_work, policy_plan, ϵ_grid, v) = solution
 
@@ -366,6 +366,7 @@ function simulate(;dists, solution, para, n)
     retire_age = zeros(Int64, n)
 
     #initial Distributions
+    Random.seed!(rng)
     type = rand(type_dist, n)
     n_type = ncategories(type_dist)
     asset_path[:,1] = rand(asset_dist, n)
@@ -398,8 +399,8 @@ function simulate(;dists, solution, para, n)
         @tullio aime_path[i,$s] = (((wy_path[i,$s-1] + work_path[i,$s]) > 0) ? (wy_path[i,$s-1] < 5 ? less_5y_f_aime[i] : more_5y_f_aime[i]) : 2.747)
         @tullio aime_path[i,$s] = min(4.58, aime_path[i,$s])
         @tullio retire_age[i] = (plan_path[i,$s] > plan_path[i,$s-1] ? min($s+$init_t-2, 70) : retire_age[i])
-        @tullio monthly_benefit[i] := 12*max(wy_path[i,$s-1]*aime_path[i,$s-1]*0.00775+3, wy_path[i,$s-1]*aime_path[i,$s-1]*0.0155)*(1+0.04*(retire_age[i]-$ra))
-        @tullio lumpsum_benefit[i] := min(max(wy_path[i,$s-1], 2*wy_path[i,$s-1]-15), 50)*aime_path[i,$s-1]*(1+0.04*(retire_age[i]-$ra))
+        @tullio monthly_benefit[i] := 12*max(wy_path[i,$s-1]*aime_path[i,$s-1]*0.00775+3, wy_path[i,$s-1]*aime_path[i,$s-1]*0.0155)*(1+0.04*(retire_age[i]-$ra))*(1 - $reduction)
+        @tullio lumpsum_benefit[i] := min(max(wy_path[i,$s-1], 2*wy_path[i,$s-1]-15), 50)*aime_path[i,$s-1]*(1+0.04*(retire_age[i]-$ra))*(1 - $reduction)
         @tullio adj_cost[i] := $φ_l*(work_path[i,$s]-work_path[i,$s-1] == 1)
         consumption_path[:,s-1] = (1+r)*asset_path[:,s-1] + 12*wage_path[:,s-1].*work_path[:,s] + (plan_path[:,s-1] .== 1) .* (plan_path[:,s] .== 2).*lumpsum_benefit + (wy_path[:,s-1] .≥ 15).*(plan_path[:,s] .== 3).*monthly_benefit - pension_tax.*work_path[:,s].*(plan_path[:,s] .== 1) - adj_cost - asset_path[:,s]
         ϵ_path[:,s] = ρ*ϵ_path[:,s-1] + ξ[:,s-1]
@@ -409,11 +410,11 @@ function simulate(;dists, solution, para, n)
     path = @with_kw (asset_path = asset_path, wage_path = 12*wage_path, work_path = work_path, wy_path = wy_path, aime_path = aime_path, lme_path = lme_path, ϵ_path = ϵ_path, plan_path = plan_path, consumption_path = consumption_path, retire_age = retire_age, v_path = v_path, type = type) 
     return path()
 end
-
+#=
 HAP = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
     ϵ = range(-2*σ/sqrt(1-ρ^2), 2*σ/sqrt(1-ρ^2), 5), T = T, μ = mort, init_t = 25, asset = collect(exp.(range(0.0, 7.0, 71)) .- 1), 
     work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
-    aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 130)
+    aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 130, reduction = 0.0)
 HAP = HAP() 
 
 solution = solve(para = HAP)
@@ -457,6 +458,7 @@ begin
     fig, ax = lines(group[k].age, group[k].wage, label = "Wage")
     fig
 end
+=#
 
 # simulation 
 # population setting
@@ -471,9 +473,201 @@ for t in 2:16
     survive[t,:] = (rand(N) .≥ mort[ages[t-1,:]]) .* survive[t-1,:]
 end
 
-# periods -5 : 10
-# reducing benefits 
-df_rb_20 = DataFrame(id = vec(transpose(repeat(1:N, 1, 16))), period = vec(repeat(-5:10, N)), 
-    age = vec(ages), survive = vec(survive))
+# benchmark 
+HAP = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
+    ϵ = range(-2*σ/sqrt(1-ρ^2), 2*σ/sqrt(1-ρ^2), 5), T = T, μ = mort, init_t = 25, asset = collect(exp.(range(0.0, 7.0, 71)) .- 1), 
+    work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
+    aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 130, reduction = 0.0)
+HAP = HAP() 
+# jldsave("benchmark_sol.jld2", sol = int_sol)
+benchmark_sol = load("benchmark_sol.jld2")
 
-vscodedisplay(df_rb_20)
+init_para = @with_kw (p_type = [0.267, 0.615, 1-0.267-0.615], μ_a = 3.0, σ_a = 1e-5, μ_ϵ = 0.0, σ_ϵ = HAP.σ/sqrt(1-HAP.ρ^2), p_work = 1.0, p_wy = [1], μ_aime = 2.747, σ_aime = 1e-5, μ_lme = 2.747, σ_lme = 1e-5)
+init_para = init_para()
+dists = initial_distribution(;para = HAP, init_para = init_para)
+path = simulate(dists = dists, solution = benchmark_sol["sol"], para = HAP, n = 30000)
+df = DataFrame(id = vec(transpose(repeat(collect(1:30000),1,HAP.T-HAP.init_t+1))), age = repeat(collect(HAP.init_t:HAP.T),30000), 
+    asset = vec(transpose(path.asset_path[:,2:end])), wage = vec(transpose(path.wage_path)), 
+    ϵ = vec(transpose(path.ϵ_path[:,2:end])),
+    work = vec(transpose(path.work_path[:,2:end])), work_year = vec(transpose(path.wy_path[:,2:end])), 
+    aime = vec(transpose(path.aime_path[:,2:end])), lme = vec(transpose(path.lme_path[:,2:end])), 
+    plan = vec(transpose(path.plan_path[:,2:end])), consumption = vec(transpose(path.consumption_path)), 
+    retire_age = vec(transpose(repeat(path.retire_age, 1, HAP.T-HAP.init_t+1))), value = vec(transpose(path.v_path)), 
+    type = vec(transpose(repeat(path.type, 1, HAP.T-HAP.init_t+1))))
+
+list = filter(row -> row.consumption < 0, df).id |> unique
+dirty_df = filter(row -> row.id in list, df)
+clean_df = filter(row -> !(row.id in list), df)
+clean_df.id = 1 .+ div.(0:nrow(clean_df)-1, T - 25 + 1)
+
+
+group = groupby(clean_df, :id)
+retire_ages = combine(group, :retire_age => last => :retire_age, :work_year => last => :work_year)
+#=
+begin
+    k = 7
+    fig, ax = lines(group[k].age, group[k].asset, label = "Asset")
+    lines!(ax, group[k].age, group[k].wage, label = "Wage")
+    vspan!(ax, filter(row -> row.work == 0, group[k]).age .- 0.5, filter(row -> row.work == 0, group[k]).age .+ 0.5, color = (:gray, 0.3), label = "Unemployed")
+    vlines!(ax, group[k].retire_age[1], color = (group[k].plan[end] == 2 ? :purple : :green), label = (group[k].plan[end] == 2 ? "Pension Type 2" : "Pension Type 3")) 
+    lines!(ax, group[k].age, group[k].consumption, label = "Consumption", color = :red)
+    fig[1,2] = Legend(fig, ax, framevisible = false)
+    fig
+end
+hist(filter(row -> row.work_year != 0, retire_ages).retire_age,
+    title = "Retirement Age", normalization = :pdf)
+=#
+# periods -5 : 10
+benchmark_df = DataFrame(id = vec(transpose(repeat(1:N, 1, 16))), period = vec(repeat(-5:10, N)), 
+    age = vec(ages), survive = vec(survive))
+gd_benchmark = groupby(benchmark_df, :id)
+for i in 1:N
+    gd_benchmark[i][!, :asset] = group[i].asset[gd_benchmark[i].age .- 24]
+    gd_benchmark[i][!, :wage] = group[i].wage[gd_benchmark[i].age .- 24]
+    gd_benchmark[i][!, :work] = group[i].work[gd_benchmark[i].age .- 24]
+    gd_benchmark[i][!, :work_year] = group[i].work_year[gd_benchmark[i].age .- 24]
+    gd_benchmark[i][!, :aime] = group[i].aime[gd_benchmark[i].age .- 24]
+    gd_benchmark[i][!, :lme] = group[i].lme[gd_benchmark[i].age .- 24]
+    gd_benchmark[i][!, :plan] = group[i].plan[gd_benchmark[i].age .- 24]
+    gd_benchmark[i][!, :consumption] = group[i].consumption[gd_benchmark[i].age .- 24]
+    gd_benchmark[i][!, :retire_age] = group[i].retire_age[gd_benchmark[i].age .- 24]
+    gd_benchmark[i][!, :type] = group[i].type[gd_benchmark[i].age .- 24]
+    gd_benchmark[i][!, :ϵ] = group[i].ϵ[gd_benchmark[i].age .- 24]
+end
+
+agg_benchmark = combine(gd_benchmark, :asset, :wage, :work, :work_year, :aime, :lme, 
+    :plan, :consumption, :retire_age, :type => first => :type, :survive, :age, :period, :ϵ)
+select_working(x, y) = y == 1 ? x : missing
+select_working_v(x,y) = select_working.(x,y) 
+avg_benchmark = combine(groupby(agg_benchmark, :period), :asset => mean => :asset,
+    :work => mean => :work, [:wage, :work] => mean ∘ skipmissing ∘ select_working_v => :wage, :work_year => mean => :work_year, 
+    :aime => mean => :aime, :lme => mean => :lme, :plan => mean => :plan, 
+    :consumption => mean => :consumption, :retire_age => mean => :retire_age, 
+    :survive => mean => :survive)
+
+avg_benchmark.retire_age
+# reducing benefits 
+# reduction = 0.2
+HAP_rb20 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
+ϵ = range(-2*σ/sqrt(1-ρ^2), 2*σ/sqrt(1-ρ^2), 5), T = T, μ = mort, init_t = 25, asset = collect(exp.(range(0.0, 7.0, 71)) .- 1), 
+work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
+aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 130, reduction = 0.2)
+HAP_rb20 = HAP_rb20()
+rb20_solution = solve(para = HAP_rb20)
+rb20_sol = integrate_sol(rb20_solution; para = HAP_rb20)
+# jldsave("rb20.jld2", sol = rb20_sol)
+
+rb20_sol = load("rb20.jld2")["sol"]
+length(gd_benchmark)
+# simulate one period ahead
+function simulate_one_period(df; para, sol, new_ϵ, new_wage)
+    #parameters
+    (; γ, η, r, ρ, σ, β, ξ_nodes, ϵ, T, μ, init_t, asset, work, wy, wy_ceil, c_min, δ, φ_l, θ_b, κ, aime, plan, ra, τ, lme, fra, reduction) = para
+    (; policy_asset, policy_work, policy_plan, ϵ_grid, v) = sol
+
+    n_type = 3
+    new_asset = copy(df.asset)
+    new_work = copy(df.work)
+    new_plan = copy(df.plan)
+    new_work_year = copy(df.work_year)
+    new_aime = copy(df.aime)
+    new_lme = copy(df.lme)
+    new_consumption = copy(df.consumption)
+    new_retire_age = copy(df.retire_age)
+
+    real_retire_age = collect(-5:5)
+
+    for i in 1:nrow(df)
+        asset_func = LinearInterpolation((collect(1:n_type), asset, ϵ_grid[:,df.age[i]-24], wy, work, aime, lme, real_retire_age), policy_asset[:,:,:,:,:,:,:,:,df.age[i]-24])
+        work_func = LinearInterpolation((collect(1:n_type), asset, ϵ_grid[:,df.age[i]-24], wy, work, aime, lme, real_retire_age), policy_work[:,:,:,:,:,:,:,:,df.age[i]-24])
+        plan_func = LinearInterpolation((collect(1:n_type), asset, ϵ_grid[:,df.age[i]-24], wy, work, aime, lme, real_retire_age), policy_plan[:,:,:,:,:,:,:,:,df.age[i]-24])
+        new_asset[i] = min(asset_func(df.type[i], df.asset[i], new_ϵ[i], df.work_year[i], df.work[i], df.aime[i], df.lme[i], clamp(df.age[i]-ra, -5, 5)), asset[end])
+        new_work[i] = round(work_func(df.type[i], df.asset[i], new_ϵ[i], df.work_year[i], df.work[i], df.aime[i], df.lme[i], clamp(df.age[i]-ra, -5, 5)))
+        new_plan[i] = df.plan[i] == 1 ? round(plan_func(df.type[i], df.asset[i], new_ϵ[i], df.work_year[i], df.work[i], df.aime[i], df.lme[i], clamp(df.age[i]-ra, -5, 5))) : df.plan[i]
+        new_work_year[i] = min(df.work_year[i] + new_work[i], wy_ceil)
+        c_aime = new_wage[i] < aime[2] ? aime[1] : (new_wage[i] < aime[3] ? aime[2] : aime[3])
+        pension_tax = c_aime*0.2*τ*12
+
+        new_lme[i] = min.(4.58, max.(df.lme[i], c_aime * df.work[i])) 
+        less_5y_f_aime = c_aime*new_work[i]/(df.work_year[i] + new_work[i]) + df.work_year[i]/(df.work_year[i] + new_work[i])*df.aime[i]
+        more_5y_f_aime = df.aime[i] + 0.2*max(0, c_aime * new_work[i]-df.lme[i])
+        new_aime[i] = (((df.work_year[i] + new_work[i]) > 0) ? (df.work_year[i] < 5 ? less_5y_f_aime : more_5y_f_aime) : 2.747)
+        new_aime[i] = min(4.58, new_aime[i])
+        new_retire_age[i] = (new_plan[i] > df.plan[i] ? min(df.age[i]+1, 70) : df.retire_age[i])
+        monthly_benefit = 12*max(df.work_year[i]*df.aime[i]*0.00775+3, df.work_year[i]*df.aime[i]*0.0155)*(1+0.04*(new_retire_age[i]-ra))*(1 - reduction)
+        lumpsum_benefit = min(max(df.work_year[i], 2*df.work_year[i]-15), 50)*df.aime[i]*(1+0.04*(new_retire_age[i]-ra))*(1 - reduction)
+        adj_cost = φ_l*(new_work[i]-df.work[i] == 1)
+        new_consumption[i] = (1+r)*new_asset[i] + 12*new_wage[i]*new_work[i] + (df.age[i] - ra ≤ 5)*(df.plan[i] == 1) * (new_plan[i] == 2)*lumpsum_benefit + (df.age[i] - ra ≤ 5)*(df.work_year[i] ≥ 15)*(new_plan[i] == 3)*monthly_benefit - pension_tax * new_work[i] * (new_plan[i] == 1) - adj_cost - new_asset[i]
+    end
+    return (; asset = new_asset, work = new_work, plan = new_plan, work_year = new_work_year, aime = new_aime, lme = new_lme, consumption = new_consumption, retire_age = new_retire_age)
+end
+
+rb_20 = filter(row -> row.period == 0, agg_benchmark)
+sim_20 = simulate_one_period(rb_20, para = HAP_rb20, sol = rb20_sol, new_ϵ = agg_benchmark.ϵ[agg_benchmark.period .== 1], new_wage = agg_benchmark.wage[agg_benchmark.period .== 1])
+
+agg_rb_20 = agg_benchmark
+
+gd_rb_20 = groupby(agg_rb_20, :period)
+gd_rb_20[7][!, :asset] = sim_20.asset
+groupby(agg_benchmark, :period)[7].asset == sim_20.asset
+groupby(agg_benchmark, :period)[7].consumption 
+sim_20.consumption
+agg_rb_20
+for t in 0:last(periods)-1
+    new_df
+end
+
+
+# reduction = 0.4
+HAP_rb40 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
+ϵ = range(-2*σ/sqrt(1-ρ^2), 2*σ/sqrt(1-ρ^2), 5), T = T, μ = mort, init_t = 25, asset = collect(exp.(range(0.0, 7.0, 71)) .- 1), 
+work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
+aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 130, reduction = 0.4)
+HAP_rb40 = HAP_rb40()
+rb40_solution = solve(para = HAP_rb40)
+rb40_sol = integrate_sol(rb40_solution; para = HAP_rb40)
+jldsave("rb40.jld2", sol = rb40_sol)
+
+
+# reduction = 0.6
+HAP_rb60 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
+ϵ = range(-2*σ/sqrt(1-ρ^2), 2*σ/sqrt(1-ρ^2), 5), T = T, μ = mort, init_t = 25, asset = collect(exp.(range(0.0, 7.0, 71)) .- 1), 
+work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
+aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 130, reduction = 0.6)
+HAP_rb60 = HAP_rb60()
+rb60_solution = solve(para = HAP_rb60)
+rb60_sol = integrate_sol(rb60_solution; para = HAP_rb60)
+jldsave("rb60.jld2", sol = rb60_sol)
+
+
+# defer retirement
+# ra = 68
+HAP_dr3 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
+ϵ = range(-2*σ/sqrt(1-ρ^2), 2*σ/sqrt(1-ρ^2), 5), T = T, μ = mort, init_t = 25, asset = collect(exp.(range(0.0, 7.0, 71)) .- 1), 
+work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
+aime = profile, plan = collect(1:3), ra = 68, τ = 0.12, lme = profile, fra = 130, reduction = 0.0)
+HAP_dr3 = HAP_dr3()
+dr3_solution = solve(para = HAP_dr3)
+dr3_sol = integrate_sol(dr3_solution; para = HAP_dr3)
+jldsave("dr3.jld2", sol = dr3_sol)
+
+# ra = 70
+HAP_dr5 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
+ϵ = range(-2*σ/sqrt(1-ρ^2), 2*σ/sqrt(1-ρ^2), 5), T = T, μ = mort, init_t = 25, asset = collect(exp.(range(0.0, 7.0, 71)) .- 1), 
+work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
+aime = profile, plan = collect(1:3), ra = 70, τ = 0.12, lme = profile, fra = 130, reduction = 0.0)
+HAP_dr5 = HAP_dr5()
+dr5_solution = solve(para = HAP_dr5)
+dr5_sol = integrate_sol(dr5_solution; para = HAP_dr5)
+jldsave("dr5.jld2", sol = dr5_sol)
+
+# ra = 72
+HAP_dr7 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
+ϵ = range(-2*σ/sqrt(1-ρ^2), 2*σ/sqrt(1-ρ^2), 5), T = T, μ = mort, init_t = 25, asset = collect(exp.(range(0.0, 7.0, 71)) .- 1), 
+work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
+aime = profile, plan = collect(1:3), ra = 72, τ = 0.12, lme = profile, fra = 130, reduction = 0.0)
+HAP_dr7 = HAP_dr7()
+dr7_solution = solve(para = HAP_dr7)
+dr7_sol = integrate_sol(dr7_solution; para = HAP_dr7)
+jldsave("dr7.jld2", sol = dr7_sol)
+
