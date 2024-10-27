@@ -704,50 +704,39 @@ avg_rb_60 = combine(groupby(filter(row -> row.survive == 1, rb_60), :period),
     :survive => mean => :survive)
 
 # simulations of reducing benefits
-# asset
 begin
-    fig = Figure(width = 1600, height = 600)
-    ax = Axis(fig[1,1], xlabel = "Period", ylabel = "10k NTD")
-    lines!(ax, avg_benchmark.period, avg_benchmark.asset, label = "Benchmark") 
-    lines!(ax, avg_rb_20.period, avg_rb_20.asset, label = "20% Reduction")
-    lines!(ax, avg_rb_40.period, avg_rb_40.asset, label = "40% Reduction")
-    lines!(ax, avg_rb_60.period, avg_rb_60.asset, label = "60% Reduction")
-    xlims!(ax, (-5, 10))
-    vlines!(ax, [0], color = :black)
-    Legend(fig[1,2], ax, framevisible = false)
-    fig
-end
-save("rb_asset.png", fig)
+    fig = Figure(resolution = (800, 600))
+    # asset
+    ax1 = Axis(fig[1,1], title = "Asset")
+    lines!(ax1, avg_benchmark.period, avg_benchmark.asset, label = "Benchmark") 
+    lines!(ax1, avg_rb_20.period, avg_rb_20.asset, label = "20% Reduction")
+    lines!(ax1, avg_rb_40.period, avg_rb_40.asset, label = "40% Reduction")
+    lines!(ax1, avg_rb_60.period, avg_rb_60.asset, label = "60% Reduction")
+    xlims!(ax1, (-5, 10))
+    vlines!(ax1, [0], color = :black)
 
-# work
-begin
-    fig = Figure(width = 1600, height = 600)
-    ax = Axis(fig[1,1], xlabel = "Period", ylabel = "Work")
-    lines!(ax, avg_benchmark.period, avg_benchmark.work, label = "Benchmark") 
-    lines!(ax, avg_rb_20.period, avg_rb_20.work, label = "20% Reduction")
-    lines!(ax, avg_rb_40.period, avg_rb_40.work, label = "40% Reduction")
-    lines!(ax, avg_rb_60.period, avg_rb_60.work, label = "60% Reduction")
-    xlims!(ax, (-5, 10))
-    vlines!(ax, [0], color = :black)
-    Legend(fig[1,2], ax, framevisible = false)
-    fig
-end
-save("rb_work.png", fig)
+    # work
+    ax2 = Axis(fig[2,1], title = "Labor Supply")
+    lines!(ax2, avg_benchmark.period, avg_benchmark.work, label = "Benchmark") 
+    lines!(ax2, avg_rb_20.period, avg_rb_20.work, label = "20% Reduction")
+    lines!(ax2, avg_rb_40.period, avg_rb_40.work, label = "40% Reduction")
+    lines!(ax2, avg_rb_60.period, avg_rb_60.work, label = "60% Reduction")
+    xlims!(ax2, (-5, 10))
+    vlines!(ax2, [0], color = :black)
 
-# consumption
-begin
-    fig = Figure(width = 1600, height = 600)
-    ax = Axis(fig[1,1], xlabel = "Period", ylabel = "10k NTD")
-    lines!(ax, avg_benchmark.period, avg_benchmark.consumption, label = "Benchmark") 
-    lines!(ax, avg_rb_20.period, avg_rb_20.consumption, label = "20% Reduction")
-    lines!(ax, avg_rb_40.period, avg_rb_40.consumption, label = "40% Reduction")
-    lines!(ax, avg_rb_60.period, avg_rb_60.consumption, label = "60% Reduction")
-    xlims!(ax, (-5, 10))
-    vlines!(ax, [0], color = :black)
-    Legend(fig[1,2], ax, framevisible = false)
+    # consumption
+    ax3 = Axis(fig[3,1], title = "Consumption")
+    lines!(ax3, avg_benchmark.period, avg_benchmark.consumption, label = "Benchmark") 
+    lines!(ax3, avg_rb_20.period, avg_rb_20.consumption, label = "20% Reduction")
+    lines!(ax3, avg_rb_40.period, avg_rb_40.consumption, label = "40% Reduction")
+    lines!(ax3, avg_rb_60.period, avg_rb_60.consumption, label = "60% Reduction")
+    xlims!(ax3, (-5, 10))
+    vlines!(ax3, [0], color = :black)
+
+    Legend(fig[:,2], ax, framevisible = false) 
     fig
 end
-save("rb_consumption.png", fig)
+save("rb.png", fig)
 
 # retire age
 get_ra_density(x, df) = mean(filter(row -> (row.plan != 1)&&(row.period == 10), df).retire_age .== x)
@@ -890,3 +879,50 @@ avg_dr7 = combine(groupby(filter(row -> row.survive == 1, dr7), :period),
     :aime => mean => :aime, :lme => mean => :lme, :plan => mean => :plan, 
     :consumption => mean => :consumption, :retire_age => mean => :retire_age, 
     :survive => mean => :survive)
+
+begin
+    fig = Figure(resolution = (800, 600))
+    # asset
+    ax1 = Axis(fig[1,1], title = "Asset")
+    lines!(ax1, avg_benchmark.period, avg_benchmark.asset, label = "Benchmark") 
+    lines!(ax1, avg_dr3.period, avg_dr3.asset, label = "3y Deferment")
+    lines!(ax1, avg_dr5.period, avg_dr5.asset, label = "5y Deferment")
+    lines!(ax1, avg_dr7.period, avg_dr7.asset, label = "7y Deferment")
+    xlims!(ax1, (-5, 10))
+    vlines!(ax1, [0], color = :black)
+
+    # work
+    ax2 = Axis(fig[2,1], title = "Labor Supply")
+    lines!(ax2, avg_benchmark.period, avg_benchmark.work, label = "Benchmark") 
+    lines!(ax2, avg_dr3.period, avg_dr3.work, label = "3y Deferment")
+    lines!(ax2, avg_dr5.period, avg_dr5.work, label = "5y Deferment")
+    lines!(ax2, avg_dr7.period, avg_dr7.work, label = "7y Deferment")
+    xlims!(ax2, (-5, 10))
+    vlines!(ax2, [0], color = :black)
+
+    # consumption
+    ax3 = Axis(fig[3,1], title = "Consumption")
+    lines!(ax3, avg_benchmark.period, avg_benchmark.consumption, label = "Benchmark") 
+    lines!(ax3, avg_dr3.period, avg_dr3.consumption, label = "3y Deferment")
+    lines!(ax3, avg_dr5.period, avg_dr5.consumption, label = "5y Deferment")
+    lines!(ax3, avg_dr7.period, avg_dr7.consumption, label = "7y Deferment")
+    xlims!(ax3, (-5, 10))
+    vlines!(ax3, [0], color = :black)
+
+    Legend(fig[:,2], ax2, framevisible = false) 
+    fig
+end
+save("dr.png", fig)
+
+# average retire age
+((60:80) .* [get_ra_density(a, agg_benchmark) for a in 60:80]) |> sum
+((60:80) .* [get_ra_density(a, dr3) for a in 60:80]) |> sum
+((60:80) .* [get_ra_density(a, dr5) for a in 60:80]) |> sum
+((60:80) .* [get_ra_density(a, dr7) for a in 60:80]) |> sum
+
+# plan type
+get_plan_density(x, df) = mean(filter(row -> (row.plan != 1)&&(row.period == 10), df).plan .== x)
+get_plan_density(2, agg_benchmark)
+get_plan_density(2, dr3)
+get_plan_density(2, dr5)
+get_plan_density(2, dr7)
