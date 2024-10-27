@@ -539,7 +539,8 @@ agg_benchmark = combine(gd_benchmark, :asset, :wage, :work, :work_year, :aime, :
     :plan, :consumption, :retire_age, :type => first => :type, :survive, :age, :period, :ϵ)
 select_working(x, y) = y == 1 ? x : missing
 select_working_v(x,y) = select_working.(x,y) 
-avg_benchmark = combine(groupby(agg_benchmark, :period), :asset => mean => :asset,
+avg_benchmark = combine(groupby(filter(row -> row.survive == 1, agg_benchmark), :period), 
+    :asset => mean => :asset,
     :work => mean => :work, [:wage, :work] => mean ∘ skipmissing ∘ select_working_v => :wage, :work_year => mean => :work_year, 
     :aime => mean => :aime, :lme => mean => :lme, :plan => mean => :plan, 
     :consumption => mean => :consumption, :retire_age => mean => :retire_age, 
@@ -553,12 +554,12 @@ HAP_rb20 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, 
 work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
 aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 130, reduction = 0.2)
 HAP_rb20 = HAP_rb20()
-rb20_solution = solve(para = HAP_rb20)
-rb20_sol = integrate_sol(rb20_solution; para = HAP_rb20)
+#rb20_solution = solve(para = HAP_rb20)
+#rb20_sol = integrate_sol(rb20_solution; para = HAP_rb20)
 # jldsave("rb20.jld2", sol = rb20_sol)
 
 rb20_sol = load("rb20.jld2")["sol"]
-length(gd_benchmark)
+
 # simulate one period ahead
 function simulate_one_period(df; para, sol, new_ϵ, new_wage)
     #parameters
@@ -585,7 +586,7 @@ function simulate_one_period(df; para, sol, new_ϵ, new_wage)
         new_work[i] = round(work_func(df.type[i], df.asset[i], new_ϵ[i], df.work_year[i], df.work[i], df.aime[i], df.lme[i], clamp(df.age[i]-ra, -5, 5)))
         new_plan[i] = df.plan[i] == 1 ? round(plan_func(df.type[i], df.asset[i], new_ϵ[i], df.work_year[i], df.work[i], df.aime[i], df.lme[i], clamp(df.age[i]-ra, -5, 5))) : df.plan[i]
         new_work_year[i] = min(df.work_year[i] + new_work[i], wy_ceil)
-        c_aime = new_wage[i] < aime[2] ? aime[1] : (new_wage[i] < aime[3] ? aime[2] : aime[3])
+        c_aime = new_wage[i]/12 < aime[2] ? aime[1] : (new_wage[i]/12 < aime[3] ? aime[2] : aime[3])
         pension_tax = c_aime*0.2*τ*12
 
         new_lme[i] = min.(4.58, max.(df.lme[i], c_aime * df.work[i])) 
@@ -597,26 +598,36 @@ function simulate_one_period(df; para, sol, new_ϵ, new_wage)
         monthly_benefit = 12*max(df.work_year[i]*df.aime[i]*0.00775+3, df.work_year[i]*df.aime[i]*0.0155)*(1+0.04*(new_retire_age[i]-ra))*(1 - reduction)
         lumpsum_benefit = min(max(df.work_year[i], 2*df.work_year[i]-15), 50)*df.aime[i]*(1+0.04*(new_retire_age[i]-ra))*(1 - reduction)
         adj_cost = φ_l*(new_work[i]-df.work[i] == 1)
-        new_consumption[i] = (1+r)*new_asset[i] + 12*new_wage[i]*new_work[i] + (df.age[i] - ra ≤ 5)*(df.plan[i] == 1) * (new_plan[i] == 2)*lumpsum_benefit + (df.age[i] - ra ≤ 5)*(df.work_year[i] ≥ 15)*(new_plan[i] == 3)*monthly_benefit - pension_tax * new_work[i] * (new_plan[i] == 1) - adj_cost - new_asset[i]
+        new_consumption[i] = (1+r)*new_asset[i] + new_wage[i]*new_work[i] + (df.age[i] - ra ≤ 5)*(df.plan[i] == 1) * (new_plan[i] == 2)*lumpsum_benefit + (df.work_year[i] ≥ 15)*(new_plan[i] == 3)*monthly_benefit - pension_tax * new_work[i] - adj_cost - new_asset[i]
     end
     return (; asset = new_asset, work = new_work, plan = new_plan, work_year = new_work_year, aime = new_aime, lme = new_lme, consumption = new_consumption, retire_age = new_retire_age)
 end
 
-rb_20 = filter(row -> row.period == 0, agg_benchmark)
-sim_20 = simulate_one_period(rb_20, para = HAP_rb20, sol = rb20_sol, new_ϵ = agg_benchmark.ϵ[agg_benchmark.period .== 1], new_wage = agg_benchmark.wage[agg_benchmark.period .== 1])
+rb_20 = filter(row -> row.period ≤ 0, agg_benchmark)
 
-agg_rb_20 = agg_benchmark
-
-gd_rb_20 = groupby(agg_rb_20, :period)
-gd_rb_20[7][!, :asset] = sim_20.asset
-groupby(agg_benchmark, :period)[7].asset == sim_20.asset
-groupby(agg_benchmark, :period)[7].consumption 
-sim_20.consumption
-agg_rb_20
 for t in 0:last(periods)-1
-    new_df
+    sim = simulate_one_period(filter(row -> row.period == t, rb_20), 
+            para = HAP_rb20, sol = rb20_sol, new_ϵ = agg_benchmark.ϵ[agg_benchmark.period .== 1], 
+            new_wage = agg_benchmark.wage[agg_benchmark.period .== 1])
+    new_df = filter(row -> row.period == t+1, agg_benchmark)
+    new_df.asset = sim.asset
+    new_df.work = sim.work
+    new_df.plan = sim.plan
+    new_df.work_year = sim.work_year
+    new_df.aime = sim.aime
+    new_df.lme = sim.lme
+    new_df.consumption = sim.consumption
+    new_df.retire_age = sim.retire_age
+    append!(rb_20, new_df)
+    sort!(rb_20, :id)
 end
 
+avg_rb_20 = combine(groupby(filter(row -> row.survive == 1, rb_20), :period), 
+    :asset => mean => :asset,
+    :work => mean => :work, [:wage, :work] => mean ∘ skipmissing ∘ select_working_v => :wage, :work_year => mean => :work_year, 
+    :aime => mean => :aime, :lme => mean => :lme, :plan => mean => :plan, 
+    :consumption => mean => :consumption, :retire_age => mean => :retire_age, 
+    :survive => mean => :survive)
 
 # reduction = 0.4
 HAP_rb40 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
@@ -624,10 +635,37 @@ HAP_rb40 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, 
 work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
 aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 130, reduction = 0.4)
 HAP_rb40 = HAP_rb40()
-rb40_solution = solve(para = HAP_rb40)
-rb40_sol = integrate_sol(rb40_solution; para = HAP_rb40)
-jldsave("rb40.jld2", sol = rb40_sol)
+#rb40_solution = solve(para = HAP_rb40)
+#rb40_sol = integrate_sol(rb40_solution; para = HAP_rb40)
+#jldsave("rb40.jld2", sol = rb40_sol)
 
+rb40_sol = load("rb40.jld2")["sol"]
+
+rb_40 = filter(row -> row.period ≤ 0, agg_benchmark)
+
+for t in 0:last(periods)-1
+    sim = simulate_one_period(filter(row -> row.period == t, rb_40), 
+            para = HAP_rb40, sol = rb40_sol, new_ϵ = agg_benchmark.ϵ[agg_benchmark.period .== 1], 
+            new_wage = agg_benchmark.wage[agg_benchmark.period .== 1])
+    new_df = filter(row -> row.period == t+1, agg_benchmark)
+    new_df.asset = sim.asset
+    new_df.work = sim.work
+    new_df.plan = sim.plan
+    new_df.work_year = sim.work_year
+    new_df.aime = sim.aime
+    new_df.lme = sim.lme
+    new_df.consumption = sim.consumption
+    new_df.retire_age = sim.retire_age
+    append!(rb_40, new_df)
+    sort!(rb_40, :id)
+end
+
+avg_rb_40 = combine(groupby(filter(row -> row.survive == 1, rb_40), :period), 
+    :asset => mean => :asset,
+    :work => mean => :work, [:wage, :work] => mean ∘ skipmissing ∘ select_working_v => :wage, :work_year => mean => :work_year, 
+    :aime => mean => :aime, :lme => mean => :lme, :plan => mean => :plan, 
+    :consumption => mean => :consumption, :retire_age => mean => :retire_age, 
+    :survive => mean => :survive)
 
 # reduction = 0.6
 HAP_rb60 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
@@ -635,10 +673,109 @@ HAP_rb60 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, 
 work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
 aime = profile, plan = collect(1:3), ra = 65, τ = 0.12, lme = profile, fra = 130, reduction = 0.6)
 HAP_rb60 = HAP_rb60()
-rb60_solution = solve(para = HAP_rb60)
-rb60_sol = integrate_sol(rb60_solution; para = HAP_rb60)
-jldsave("rb60.jld2", sol = rb60_sol)
+#rb60_solution = solve(para = HAP_rb60)
+#rb60_sol = integrate_sol(rb60_solution; para = HAP_rb60)
+#jldsave("rb60.jld2", sol = rb60_sol)
+rb60_sol = load("rb60.jld2")["sol"]
+rb_60 = filter(row -> row.period ≤ 0, agg_benchmark)
 
+for t in 0:last(periods)-1
+    sim = simulate_one_period(filter(row -> row.period == t, rb_60), 
+            para = HAP_rb60, sol = rb60_sol, new_ϵ = agg_benchmark.ϵ[agg_benchmark.period .== 1], 
+            new_wage = agg_benchmark.wage[agg_benchmark.period .== 1])
+    new_df = filter(row -> row.period == t+1, agg_benchmark)
+    new_df.asset = sim.asset
+    new_df.work = sim.work
+    new_df.plan = sim.plan
+    new_df.work_year = sim.work_year
+    new_df.aime = sim.aime
+    new_df.lme = sim.lme
+    new_df.consumption = sim.consumption
+    new_df.retire_age = sim.retire_age
+    append!(rb_60, new_df)
+    sort!(rb_60, :id)
+end
+
+avg_rb_60 = combine(groupby(filter(row -> row.survive == 1, rb_60), :period), 
+    :asset => mean => :asset,
+    :work => mean => :work, [:wage, :work] => mean ∘ skipmissing ∘ select_working_v => :wage, :work_year => mean => :work_year, 
+    :aime => mean => :aime, :lme => mean => :lme, :plan => mean => :plan, 
+    :consumption => mean => :consumption, :retire_age => mean => :retire_age, 
+    :survive => mean => :survive)
+
+# simulations of reducing benefits
+# asset
+begin
+    fig = Figure(width = 1600, height = 600)
+    ax = Axis(fig[1,1], xlabel = "Period", ylabel = "10k NTD")
+    lines!(ax, avg_benchmark.period, avg_benchmark.asset, label = "Benchmark") 
+    lines!(ax, avg_rb_20.period, avg_rb_20.asset, label = "20% Reduction")
+    lines!(ax, avg_rb_40.period, avg_rb_40.asset, label = "40% Reduction")
+    lines!(ax, avg_rb_60.period, avg_rb_60.asset, label = "60% Reduction")
+    xlims!(ax, (-5, 10))
+    vlines!(ax, [0], color = :black)
+    Legend(fig[1,2], ax, framevisible = false)
+    fig
+end
+save("rb_asset.png", fig)
+
+# work
+begin
+    fig = Figure(width = 1600, height = 600)
+    ax = Axis(fig[1,1], xlabel = "Period", ylabel = "Work")
+    lines!(ax, avg_benchmark.period, avg_benchmark.work, label = "Benchmark") 
+    lines!(ax, avg_rb_20.period, avg_rb_20.work, label = "20% Reduction")
+    lines!(ax, avg_rb_40.period, avg_rb_40.work, label = "40% Reduction")
+    lines!(ax, avg_rb_60.period, avg_rb_60.work, label = "60% Reduction")
+    xlims!(ax, (-5, 10))
+    vlines!(ax, [0], color = :black)
+    Legend(fig[1,2], ax, framevisible = false)
+    fig
+end
+save("rb_work.png", fig)
+
+# consumption
+begin
+    fig = Figure(width = 1600, height = 600)
+    ax = Axis(fig[1,1], xlabel = "Period", ylabel = "10k NTD")
+    lines!(ax, avg_benchmark.period, avg_benchmark.consumption, label = "Benchmark") 
+    lines!(ax, avg_rb_20.period, avg_rb_20.consumption, label = "20% Reduction")
+    lines!(ax, avg_rb_40.period, avg_rb_40.consumption, label = "40% Reduction")
+    lines!(ax, avg_rb_60.period, avg_rb_60.consumption, label = "60% Reduction")
+    xlims!(ax, (-5, 10))
+    vlines!(ax, [0], color = :black)
+    Legend(fig[1,2], ax, framevisible = false)
+    fig
+end
+save("rb_consumption.png", fig)
+
+# retire age
+get_ra_density(x, df) = mean(filter(row -> (row.plan != 1)&&(row.period == 10), df).retire_age .== x)
+
+begin
+    fig = Figure(width = 1600, height = 600)
+    ax = Axis(fig[1,1], xlabel = "Retirement Age", ylabel = "Density")
+    lines!(ax, 60:70, [get_ra_density(a, agg_benchmark) for a in 60:70], label = "Benchmark")
+    lines!(ax, 60:70, [get_ra_density(a, rb_20) for a in 60:70], label = "20% Reduction")
+    lines!(ax, 60:70, [get_ra_density(a, rb_40) for a in 60:70], label = "40% Reduction")
+    lines!(ax, 60:70, [get_ra_density(a, rb_60) for a in 60:70], label = "60% Reduction")
+    Legend(fig[1,2], ax, framevisible = false)
+    fig
+end
+save("rb_retire_age.png", fig)
+
+# average retire age
+((60:70) .* [get_ra_density(a, agg_benchmark) for a in 60:70]) |> sum
+((60:70) .* [get_ra_density(a, rb_20) for a in 60:70]) |> sum
+((60:70) .* [get_ra_density(a, rb_40) for a in 60:70]) |> sum
+((60:70) .* [get_ra_density(a, rb_60) for a in 60:70]) |> sum
+
+# plan type
+get_plan_density(x, df) = mean(filter(row -> (row.plan != 1)&&(row.period == 10), df).plan .== x)
+get_plan_density(2, agg_benchmark)
+get_plan_density(2, rb_20)
+get_plan_density(2, rb_40)
+get_plan_density(2, rb_60)
 
 # defer retirement
 # ra = 68
@@ -647,9 +784,37 @@ HAP_dr3 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, �
 work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
 aime = profile, plan = collect(1:3), ra = 68, τ = 0.12, lme = profile, fra = 130, reduction = 0.0)
 HAP_dr3 = HAP_dr3()
-dr3_solution = solve(para = HAP_dr3)
-dr3_sol = integrate_sol(dr3_solution; para = HAP_dr3)
-jldsave("dr3.jld2", sol = dr3_sol)
+#dr3_solution = solve(para = HAP_dr3)
+#dr3_sol = integrate_sol(dr3_solution; para = HAP_dr3)
+#jldsave("dr3.jld2", sol = dr3_sol)
+
+dr3_sol = load("dr3.jld2")["sol"]
+
+dr3 = filter(row -> row.period ≤ 0, agg_benchmark)
+
+for t in 0:last(periods)-1
+    sim = simulate_one_period(filter(row -> row.period == t, dr3), 
+            para = HAP_dr3, sol = dr3_sol, new_ϵ = agg_benchmark.ϵ[agg_benchmark.period .== 1], 
+            new_wage = agg_benchmark.wage[agg_benchmark.period .== 1])
+    new_df = filter(row -> row.period == t+1, agg_benchmark)
+    new_df.asset = sim.asset
+    new_df.work = sim.work
+    new_df.plan = sim.plan
+    new_df.work_year = sim.work_year
+    new_df.aime = sim.aime
+    new_df.lme = sim.lme
+    new_df.consumption = sim.consumption
+    new_df.retire_age = sim.retire_age
+    append!(dr3, new_df)
+    sort!(dr3, :id)
+end
+
+avg_dr3 = combine(groupby(filter(row -> row.survive == 1, dr3), :period), 
+    :asset => mean => :asset,
+    :work => mean => :work, [:wage, :work] => mean ∘ skipmissing ∘ select_working_v => :wage, :work_year => mean => :work_year, 
+    :aime => mean => :aime, :lme => mean => :lme, :plan => mean => :plan, 
+    :consumption => mean => :consumption, :retire_age => mean => :retire_age, 
+    :survive => mean => :survive)
 
 # ra = 70
 HAP_dr5 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
@@ -657,9 +822,36 @@ HAP_dr5 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, �
 work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
 aime = profile, plan = collect(1:3), ra = 70, τ = 0.12, lme = profile, fra = 130, reduction = 0.0)
 HAP_dr5 = HAP_dr5()
-dr5_solution = solve(para = HAP_dr5)
-dr5_sol = integrate_sol(dr5_solution; para = HAP_dr5)
-jldsave("dr5.jld2", sol = dr5_sol)
+#dr5_solution = solve(para = HAP_dr5)
+#dr5_sol = integrate_sol(dr5_solution; para = HAP_dr5)
+#jldsave("dr5.jld2", sol = dr5_sol)
+dr5_sol = load("dr5.jld2")["sol"]
+
+dr5 = filter(row -> row.period ≤ 0, agg_benchmark)
+
+for t in 0:last(periods)-1
+    sim = simulate_one_period(filter(row -> row.period == t, dr5), 
+            para = HAP_dr5, sol = dr5_sol, new_ϵ = agg_benchmark.ϵ[agg_benchmark.period .== 1], 
+            new_wage = agg_benchmark.wage[agg_benchmark.period .== 1])
+    new_df = filter(row -> row.period == t+1, agg_benchmark)
+    new_df.asset = sim.asset
+    new_df.work = sim.work
+    new_df.plan = sim.plan
+    new_df.work_year = sim.work_year
+    new_df.aime = sim.aime
+    new_df.lme = sim.lme
+    new_df.consumption = sim.consumption
+    new_df.retire_age = sim.retire_age
+    append!(dr5, new_df)
+    sort!(dr5, :id)
+end
+
+avg_dr5 = combine(groupby(filter(row -> row.survive == 1, dr5), :period), 
+    :asset => mean => :asset,
+    :work => mean => :work, [:wage, :work] => mean ∘ skipmissing ∘ select_working_v => :wage, :work_year => mean => :work_year, 
+    :aime => mean => :aime, :lme => mean => :lme, :plan => mean => :plan, 
+    :consumption => mean => :consumption, :retire_age => mean => :retire_age, 
+    :survive => mean => :survive)
 
 # ra = 72
 HAP_dr7 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, σ = 0.2, β = [0.945, 0.859, 1.124], ξ_nodes = 20, 
@@ -667,7 +859,34 @@ HAP_dr7 = @with_kw (γ = 3.0, η = [0.412, 0.649, 0.967], r = 0.02, ρ = 0.97, �
 work = [0,1], wy = collect(0:30), wy_ceil = 30, c_min = 0.3, δ = [-2.3, 0.13, -0.001], φ_l = 20.0, θ_b = 200, κ = 700,
 aime = profile, plan = collect(1:3), ra = 72, τ = 0.12, lme = profile, fra = 130, reduction = 0.0)
 HAP_dr7 = HAP_dr7()
-dr7_solution = solve(para = HAP_dr7)
-dr7_sol = integrate_sol(dr7_solution; para = HAP_dr7)
-jldsave("dr7.jld2", sol = dr7_sol)
+#dr7_solution = solve(para = HAP_dr7)
+#dr7_sol = integrate_sol(dr7_solution; para = HAP_dr7)
+#jldsave("dr7.jld2", sol = dr7_sol)
 
+dr7_sol = load("dr7.jld2")["sol"]
+
+dr7 = filter(row -> row.period ≤ 0, agg_benchmark)
+
+for t in 0:last(periods)-1
+    sim = simulate_one_period(filter(row -> row.period == t, dr7), 
+            para = HAP_dr7, sol = dr7_sol, new_ϵ = agg_benchmark.ϵ[agg_benchmark.period .== 1], 
+            new_wage = agg_benchmark.wage[agg_benchmark.period .== 1])
+    new_df = filter(row -> row.period == t+1, agg_benchmark)
+    new_df.asset = sim.asset
+    new_df.work = sim.work
+    new_df.plan = sim.plan
+    new_df.work_year = sim.work_year
+    new_df.aime = sim.aime
+    new_df.lme = sim.lme
+    new_df.consumption = sim.consumption
+    new_df.retire_age = sim.retire_age
+    append!(dr7, new_df)
+    sort!(dr7, :id)
+end
+
+avg_dr7 = combine(groupby(filter(row -> row.survive == 1, dr7), :period), 
+    :asset => mean => :asset,
+    :work => mean => :work, [:wage, :work] => mean ∘ skipmissing ∘ select_working_v => :wage, :work_year => mean => :work_year, 
+    :aime => mean => :aime, :lme => mean => :lme, :plan => mean => :plan, 
+    :consumption => mean => :consumption, :retire_age => mean => :retire_age, 
+    :survive => mean => :survive)
