@@ -1,210 +1,150 @@
-include("Mortality.jl")
-using .Mortality
-include("PensionBenefit.jl")
-using .PensionBenefit
+using Lux, Statistics, Zygote, Random, Printf, Distributions
+using CairoMakie, Optimisers, ADTypes, LaTeXStrings, Parameters
 
-using Distributions, LinearAlgebra, CairoMakie, FastGaussQuadrature
-using Parameters, Random, Tables, Profile, DataFrames
-using CUDA, CUDAKernels, KernelAbstractions, Tullio, CUDA.Adapt
-using BenchmarkTools, Interpolations
-using JLD2, LaTeXStrings
+# Packages for backward induction
+using Optim, Interpolations
 
-#life-cycle problem of pension solver
-mort = mortality([1.13, 5.0*10^4,0.1,0.0002])
-T = life_ceil([1.13, 5.0*10^4,0.1,0.0002])
+# Set the seed 
+seed = 123
+rng = Xoshiro(seed)
 
-
-function benchmark_model(γ = 3.0, β = 1 ./ [1.02, 1.02, 1.02], η = [0.7, 0.9, 1.0], 
-                         θ_b = 400, κ = 700, c_floor = 0.3, r = 0.02, φ_l = 5.0,
-                         σ = 0.0001, ρ = 1.0, δ = [1.0, 0.0, 0.0], 
-                         μ = mort, T = T, reduction = 0.0, sra = 65, t_0 = 40)
-
-    #initialize the model
-    asset = range(0, 200, length = 31)
-    type = 1:3
-    ϵ = range(-2/sqrt(1-ρ^2)*σ, 2/sqrt(1-ρ^2)*σ, length = 5)
-    ξ, weight = gausshermite(10)
-    ξ = sqrt(2)*σ*ξ
-    work = 0:1
-    plan = 1:3
-    a_prop = 0:0.05:1-1e-5
-    aims = range(2.747, 4.58, length = 3)
-    wy = 0:30
-
-    v = zeros(length(asset), length(work), length(plan), length(aims), length(ϵ), length(wy), length(type), T-t_0+2)
-    a_policy = zeros(length(asset), length(work), length(plan), length(aims), length(ϵ), length(wy), length(type), T-t_0+1)
-    n_policy = zeros(length(asset), length(work), length(plan), length(aims), length(ϵ), length(wy), length(type), T-t_0+1)
-    p_policy = zeros(length(asset), length(work), length(plan), length(aims), length(ϵ), length(wy), length(type), T-t_0+1)
-
-    return (; # parameters
-            γ = γ, β = β, η = η, θ_b = θ_b, κ = κ, c_floor = c_floor, r = r, σ = σ, 
-            ρ = ρ, δ = δ, μ = μ, T = T, reduction = reduction, sra = sra, t_0 = t_0, φ_l = φ_l,
-            # grids
-            asset = asset, work = work, plan = plan, a_prop = a_prop, aims = aims, 
-            wy = wy, ϵ = ϵ, ξ = ξ, weight = weight, type = type,
-            # cu_grids
-            cu_asset = CuArray(asset), cu_work = CuArray(work), cu_plan = CuArray(plan), 
-            cu_a_prop = CuArray(a_prop), cu_aims = CuArray(aims), cu_wy = CuArray(wy), 
-            cu_ϵ = CuArray(ϵ), cu_ξ = CuArray(ξ), cu_weight = CuArray(weight), cu_type = CuArray(type),
-            cu_η = CuArray(η), cu_β = CuArray(β),
-            # solution
-            v = v, a_policy = a_policy, n_policy = n_policy, p_policy = p_policy)
+# Parameters 
+function set_parameters(; β = 0.95, γ = 1.5, σ = 0.3, ρ = 0.0, T = 20, r = 1/ 0.95 - 1)
+    ξ = randn(1000, T)
+    return (β = β, γ = γ, σ = σ, ρ = ρ, T = T, r = r)
 end
-p = benchmark_model()
 
+p = set_parameters()
+
+# Utility Flow 
+# Numerical stability
+u(c; γ = p.γ, β = p.β) = c ≥ 0 ? ((γ == 1 ? log(c) : c^(1-γ)/(1-γ))*(1-β)) : -1e10
+
+# Sampler 
+function sample(n; a_0_dist = Uniform(-5, 5), ϵ_0_dist = Uniform(-1, 1), T = p.T, rng = rng, σ = p.σ)
+    a_0 = rand(rng, a_0_dist, 1, n) .|> Float32
+    ϵ_0 = rand(rng, ϵ_0_dist, 1, n) .|> Float32
+    t = zeros(1, n) .|> Float32
+    ξ = σ*randn(Float32, 1, n) 
+    return vcat(a_0, ϵ_0, t), ξ
+end
+
+data, ξ = sample(100)
+
+# Neural network 
+model = Chain(Dense(3 => 32, selu), Dense(32 => 32, selu), Dense(32 => 1, softplus))
+
+ps, st = Lux.setup(rng, model)
+
+# Optimizer
+opt = AMSGrad(0.0001)
+
+# Auto-differentiation
+vjp_rule = AutoZygote()
+
+# Customized penalty for transversality condition
+penalty(x) = 100*mean(abs2.(x))
+
+# Customized loss function 
+# Using -v as the loss function
+
+function loss_function(model, ps, st, data; p = p)
+    @unpack β, γ, σ, ρ, T, r = p
+    v = 0f0
+    n = size(data, 2)
+    # Compute the value
+    for s in 1:T
+        c, st = Lux.apply(model, data, ps, st) 
+        a, ϵ, t = data[1:1, :], data[2:2, :], data[3:3, :]
+        new_ϵ = ρ*ϵ + σ*randn(Float32, 1, n)
+        new_a = (1+r)*a + exp.(ϵ) - c
+        new_t = t .+ 1
+        v += mean(u.(c))*(β^(s-1))
+        data = vcat(new_a, new_ϵ, new_t)
+    end
+    # constraint for borrowing
+    return - v + penalty(data[1, :]), st, ()
+end
+
+# Training state 
+tstate = Training.TrainState(model, ps, st, opt)
+
+# Training function 
+function train(tstate, vjp, data, loss_function, epochs)
+    epoch = 1
+    #loss = Inf
+    #distance = Inf
+    while epoch ≤ epochs #&& distance > 1f-5
+        _, new_loss, _, tstate = Training.single_train_step!(
+            vjp, loss_function, data, tstate)
+        if epoch % 100 == 1 || epoch == epochs
+            @printf "Epoch: %3d \t New Loss: %.5g\n" epoch new_loss
+        end
+        #=
+        if epoch % 100 == 1 
+            data, ξ = sample(100)
+        end
+        =#
+        #distance = abs(loss - new_loss)
+        #loss = new_loss
+        epoch += 1
+    end
+    return tstate
+end
+
+# Pretraining the model
+#tstate = train(tstate, vjp_rule, data, pretrain_loss, 500)
+
+# Train the model 
+tstate = train(tstate, vjp_rule, data, loss_function, 20000)
 #=
--------------------------------------------
-              Index System
--------------------------------------------
-asset       a         aa 
-ϵ           e       
-ξ           x
-prod_factor k                   Not used
-rra         d
-work        w         ww
-aims        m
-lms         l                   Not used
-plan        p         pp
-scheme      c         cc
-wy          y
-type        b                   
-prior       j
-inform      i         ii        Not used
--------------------------------------------
+# A comparison to the traditional backward induction method 
+function backward(; β = β, r = r, γ = γ, σ = σ, ρ = ρ, T = T, tol = 1e-10)
+    a_grid, ϵ_grid = collect(-5:0.1:5), collect(-1:0.1:1)
+    n_a, n_ϵ = length(a_grid), length(ϵ_grid)
+    n_ξ = 100
+    ξ = σ*randn(n_ξ)
+    v = zeros(n_a, n_ϵ, T+1)
+    c = zeros(n_a, n_ϵ, T) 
+    for s in reverse(1:T)
+        v_func = LinearInterpolation((a_grid, ϵ_grid), v[:, :, s+1], extrapolation_bc = Line()) 
+        for (i, a) in enumerate(a_grid), (j, ϵ) in enumerate(ϵ_grid)
+            obj(c) = u(c[1]) + β * mean(v_func.((a*(1+r) + exp(ϵ) - c[1])*ones(n_ξ), ρ*ϵ .+ ξ)) + 1e5*(s == T)*min((a*(1+r) + exp(ϵ) - c[1]), 0)
+            res = maximize(obj, [exp(ϵ)])
+            v[i, j, s], c[i, j, s] = Optim.maximum(res), Optim.maximizer(res)[1]
+        end
+    end
+    return (; v = v, c = c)
+end
+
+back_v, back_c = backward()
 =#
-
-function solve_benchmark(;model)
-    @unpack γ, β, η, θ_b, κ, c_floor, r, σ, ρ, δ, μ, T, reduction, sra, t_0, φ_l,
-            asset, work, plan, a_prop, aims, wy, ϵ, ξ, weight, type,
-            cu_asset, cu_work, cu_plan, cu_a_prop, cu_aims, cu_wy, cu_ϵ, cu_ξ, cu_weight, cu_type, cu_η, cu_β, 
-            v, a_policy, n_policy, p_policy = model
-
-    # Compute outside the loop
-    @tullio leisure[ww,b] := (1 - 260/365*cu_work[ww])^(1-cu_η[b])
-    @tullio pension[p,pp,y,m] := ((cu_plan[p] == 1) && (cu_plan[pp] == 2) ? max(cu_wy[y], 2*cu_wy[y]-15) : (cu_plan[pp] == 3 ? max(cu_wy[y]*cu_aims[m]*0.00775+3, cu_wy[y]*cu_aims[m]*0.0155) : 0))
-    @tullio adj_cost[w,ww] := $φ_l * (cu_work[w] == 0)*(cu_work[ww] == 1)
-
-    for t in reverse(t_0:T)
-        cu_v = cu(linear_interpolation((asset, work, plan, aims, ϵ, wy, type), v[:,:,:,:,:,:,:,t-t_0+2], extrapolation_bc = Line())) 
-
-        mort = μ[t-t_0+1]
-        age_factor = δ[1] + δ[2]*t + δ[3]*t^2
-
-        @tullio wage[e,ww] := max(exp(cu_ϵ[e] + $age_factor), 2.747)*cu_work[ww]
-        @tullio index_salary[e,ww] := min(4.58, wage[e,ww])*cu_work[ww]
-        @tullio tax[e,ww] := 0.2*0.12*index_salary[e]*cu_work[ww] 
-        @tullio disposable[a,e,ww,p,pp,y,m,w] := (1+$r)*cu_asset[a] + wage[e,ww] - tax[e,ww] + pension[p,pp,y,m] - adj_cost[w,ww]
-        @tullio consumption[a,e,ww,p,pp,y,m,w,ap] := (disposable[a,e,ww,p,pp,y,m,w]*(1-cu_a_prop[ap]))
-        @tullio utility[a,e,ww,p,pp,y,m,w,ap,b] := (consumption[a,e,ww,p,pp,y,m,w,ap]^cu_η[b]*leisure[ww,b])^(1-$γ)/(1-$γ)
-        
-        @tullio new_asset[a,e,ww,p,pp,y,m,w,ap,b,x] := disposable[a,e,ww,p,pp,y,m,w] - consumption[a,e,ww,p,pp,y,m,w,ap] (a in 1:length(asset), e in 1:length(ϵ), ww in 1:length(work), p in 1:length(plan), pp in 1:length(plan), y in 1:length(wy), m in 1:length(aims), w in 1:length(work), ap in 1:length(a_prop), b in 1:length(type), x in 1:length(ξ))
-        @tullio new_work[a,e,ww,p,pp,y,m,w,ap,b,x] := cu_work[ww] (a in 1:length(asset), e in 1:length(ϵ), ww in 1:length(work), p in 1:length(plan), pp in 1:length(plan), y in 1:length(wy), m in 1:length(aims), w in 1:length(work), ap in 1:length(a_prop), b in 1:length(type), x in 1:length(ξ))
-        @tullio new_plan[a,e,ww,p,pp,y,m,w,ap,b,x] := cu_plan[pp] (a in 1:length(asset), e in 1:length(ϵ), ww in 1:length(work), p in 1:length(plan), pp in 1:length(plan), y in 1:length(wy), m in 1:length(aims), w in 1:length(work), ap in 1:length(a_prop), b in 1:length(type), x in 1:length(ξ))
-        @tullio new_aims[a,e,ww,p,pp,y,m,w,ap,b,x] := (cu_work[ww] == 0 ? cu_aims[m] : (cu_wy[y] < 5 ? (cu_aims[m]*cu_wy[y]+index_salary[e,ww])/(cu_wy[y]+1) : (cu_aims[m] < index_salary[e,ww] ? (cu_aims[m]*4+index_salary[e,ww])/5 : cu_aims[m]))) (a in 1:length(asset), e in 1:length(ϵ), ww in 1:length(work), p in 1:length(plan), pp in 1:length(plan), y in 1:length(wy), m in 1:length(aims), w in 1:length(work), ap in 1:length(a_prop), b in 1:length(type), x in 1:length(ξ))
-        @tullio new_ϵ[a,e,ww,p,pp,y,m,w,ap,b,x] := $ρ * cu_ϵ[e] + cu_ξ[x] (a in 1:length(asset), e in 1:length(ϵ), ww in 1:length(work), p in 1:length(plan), pp in 1:length(plan), y in 1:length(wy), m in 1:length(aims), w in 1:length(work), ap in 1:length(a_prop), b in 1:length(type), x in 1:length(ξ))
-        @tullio new_wy[a,e,ww,p,pp,y,m,w,ap,b,x] := min(cu_wy[y] + 1, 30) (a in 1:length(asset), e in 1:length(ϵ), ww in 1:length(work), p in 1:length(plan), pp in 1:length(plan), y in 1:length(wy), m in 1:length(aims), w in 1:length(work), ap in 1:length(a_prop), b in 1:length(type), x in 1:length(ξ))
-        @tullio new_type[a,e,ww,p,pp,y,m,w,ap,b,x] := cu_type[b] (a in 1:length(asset), e in 1:length(ϵ), ww in 1:length(work), p in 1:length(plan), pp in 1:length(plan), y in 1:length(wy), m in 1:length(aims), w in 1:length(work), ap in 1:length(a_prop), b in 1:length(type), x in 1:length(ξ))
-
-        @tullio bequest[a,e,ww,p,pp,y,m,w,ap,b,x] := $mort*$θ_b*(new_asset[a,e,ww,p,pp,y,m,w,ap,b,x] + $κ)^(1-$γ)/(1-$γ) 
-
-        f_v = (1-mort)*cu_v.(new_asset, new_work, new_plan, new_aims, new_ϵ, new_wy, new_type) .+ mort*bequest
-        @tullio EV[a,e,ww,p,pp,y,m,w,ap,b] := f_v[a,e,ww,p,pp,y,m,w,ap,b,x] * cu_weight[x]
-
-        @tullio penalty[p,pp] := (cu_plan[p] > cu_plan[pp])||((cu_plan[p] == 2)&&(cu_plan[pp] == 3))||((abs($t - $sra) > 5)&&(cu_plan[p] != cu_plan[pp])) ? -1e36 : 0
-
-        @tullio candidate[a,w,p,m,e,y,b,ap,ww,pp] := utility[a,e,ww,p,pp,y,m,w,ap,b] + cu_β[b]*EV[a,e,ww,p,pp,y,m,w,ap,b] + penalty[p,pp]
-
-        v[:,:,:,:,:,:,:,t-t_0+1], ind = Array.(dropdims.(findmax(candidate, dims = (8,9,10)), dims = (8,9,10))) 
-
-        a_policy[:,:,:,:,:,:,:,t-t_0+1] = asset[getindex.(ind, 8)]
-        n_policy[:,:,:,:,:,:,:,t-t_0+1] = work[getindex.(ind, 9)]
-        p_policy[:,:,:,:,:,:,:,t-t_0+1] = plan[getindex.(ind, 10)]
-    end
-    return (; v = v, a_policy = a_policy, n_policy = n_policy, p_policy = p_policy)
+# Simulate Results
+a = zeros(1, p.T+1) .|> Float32
+ϵ = zeros(1, p.T+1) .|> Float32 
+time = transpose(repeat(collect(1:p.T), 1, 1)) .|> Float32
+c = zeros(1, p.T) .|> Float32
+vfi_c = zeros(T)
+vfi_a = zeros(T+1)
+for s in 1:p.T 
+    #back_c_func = LinearInterpolation((collect(-5:0.1:5), collect(-1:0.1:1)), back_c[:, :, s], extrapolation_bc = Line())
+    #vfi_c[s] = back_c_func(vfi_a[s], ϵ[1, s])
+    c[:, s:s] = Lux.apply(tstate.model, vcat(a[:, s:s], ϵ[:, s:s], time[:, s:s]), tstate.parameters, tstate.states)[1]
+    a[:, s+1:s+1] = (1+r)*a[:, s:s] + exp.(ϵ[:, s:s]) - c[:, s:s]
+    #vfi_a[s+1] = (1+r)*vfi_a[s] + exp.(ϵ[1, s]) - vfi_c[s]
+    ϵ[:, s+1:s+1] = ρ*ϵ[:, s:s] + p.σ*randn(Float32, 1, 1)
 end
 
-solve_benchmark(model = p)
-
-function solve(;model)
-    @unpack γ, β, η, θ_b, κ, c_floor, r, σ, ρ, δ, μ, T, reduction, sra, t_0, φ_l,
-            asset, work, plan, a_prop, aims, wy, ϵ, ξ, weight, type,
-            cu_asset, cu_work, cu_plan, cu_a_prop, cu_aims, cu_wy, cu_ϵ, cu_ξ, cu_weight, cu_type, cu_η, cu_β, 
-            v, a_policy, n_policy, p_policy = model
-
-    value = zeros(length(asset), length(ϵ), length(type), T-t_0+2)
-    asset_policy = zeros(length(asset), length(ϵ), length(type), T-t_0+1)
-    labor_policy = zeros(length(asset), length(ϵ), length(type), T-t_0+1)
-
-    for t in reverse(t_0:T)
-        cu_v = cu(LinearInterpolation((asset, ϵ, type), value[:,:,:,t-t_0+2], extrapolation_bc = Line()))
-        mort = μ[t]
-        age_factor = δ[1] + δ[2]*t + δ[3]*t^2
-
-        @tullio wage[e] := max(exp(cu_ϵ[e] + $age_factor), 2.747)
-        @tullio disposable[a,e,ww] := (1+$r)*cu_asset[a] + wage[e]*cu_work[ww] 
-        @tullio consumption[a,e,ww,ap] := (disposable[a,e,ww]*(1-cu_a_prop[ap]))
-        @tullio utility[a,e,ww,ap,b] := (consumption[a,e,ww,ap]^cu_η[b]*(1-cu_work[ww])^(1-cu_η[b]))^(1-$γ)/(1-$γ) 
-
-        @tullio new_asset[a,e,ww,ap,b,x] := disposable[a,e,ww] - consumption[a,e,ww,ap] (a in 1:length(asset), e in 1:length(ϵ), ww in 1:length(work), ap in 1:length(a_prop), b in 1:length(type), x in 1:length(ξ))
-        @tullio new_ϵ[a,e,ww,ap,b,x] := $ρ * cu_ϵ[e] + cu_ξ[x] (a in 1:length(asset), e in 1:length(ϵ), ww in 1:length(work), ap in 1:length(a_prop), b in 1:length(type), x in 1:length(ξ))
-        @tullio new_type[a,e,ww,ap,b,x] := cu_type[b] (a in 1:length(asset), e in 1:length(ϵ), ww in 1:length(work), ap in 1:length(a_prop), b in 1:length(type), x in 1:length(ξ))
-
-        new_asset, new_ϵ, new_type = parent.((new_asset, new_ϵ, new_type))
-        fv = cu_v.(new_asset, new_ϵ, new_type)
-        @tullio EV[a,e,ww,ap,b] := fv[a,e,ww,ap,b,x] * cu_weight[x] 
-
-        @tullio candidate[a,e,b,ap,ww] := utility[a,e,ww,ap,b] + $mort * cu_β[b]*EV[a,e,ww,ap,b]
-        candidate = isnan.(candidate) * (-1e36) .+ .!isnan.(candidate) .* candidate
-        value[:,:,:,t-t_0+1], ind = Array.(dropdims.(findmax(candidate, dims = (4,5)), dims = (4,5))) 
-        asset_policy[:,:,:,t-t_0+1] = a_prop[getindex.(ind, 4)]
-        labor_policy[:,:,:,t-t_0+1] = work[getindex.(ind, 5)]
-    end
-    return (; value = value, asset_policy = asset_policy, labor_policy = labor_policy)
-end
-
-sol = solve(model = p)
-sol.asset_policy
-function simulate(;model, sol)
-    @unpack γ, β, η, θ_b, κ, c_floor, r, σ, ρ, δ, μ, T, reduction, sra, t_0, φ_l,
-            asset, work, plan, a_prop, aims, wy, ϵ, ξ, weight, type,
-            cu_asset, cu_work, cu_plan, cu_a_prop, cu_aims, cu_wy, cu_ϵ, cu_ξ, cu_weight, cu_type, cu_η, cu_β, 
-            v, a_policy, n_policy, p_policy = model
-    @unpack value, asset_policy, labor_policy = sol
-
-    a_path = 30*ones(T-t_0+1)
-    n_path = zeros(T-t_0+1)
-    ϵ_path = zeros(T-t_0+1)
-    new_ϵ = zeros(T-t_0+1)
-    new_a = zeros(T-t_0+1)
-    consumption_path = zeros(T-t_0+1)
-    wage_path = zeros(T-t_0+1)
-    set_type = 3
-
-    for t in t_0:T-1
-        s = t - t_0 + 1
-        a_func = LinearInterpolation((asset, ϵ, type), asset_policy[:,:,:,s], extrapolation_bc = Line())
-        n_func = LinearInterpolation((asset, ϵ, type), labor_policy[:,:,:,s], extrapolation_bc = Line()) 
-        wage_path[s] = max(exp(ϵ_path[s] + δ[1] + δ[2]*t + δ[3]*t^2), 2.747)
-        n_path[s] = round(clamp(n_func(a_path[s], ϵ_path[s], set_type), 0, 1))
-        disposable = (1+r)*a_path[s] + wage_path[s]*n_path[s] 
-        new_a[s] = a_func(a_path[s], ϵ_path[s], set_type)*disposable
-        consumption_path[s] = disposable - new_a[s]
-        a_path[s+1] = new_a[s]
-        ϵ_path[s+1] = ρ*ϵ_path[s] + randn()*σ
-    end
-    return (; a_path = a_path, n_path = n_path, ϵ_path = ϵ_path, consumption_path = consumption_path, wage_path = wage_path, new_a = new_a)
-end
-
-sim = simulate(model = p, sol = sol)
-
-begin
-    fig = Figure()
-    ax = Axis(fig[1, 1]; xlabel = "Age")
-    xlims!(p.t_0, p.T)
-    lines!(ax, p.t_0:p.T, sim.a_path, label = "Asset")
-    lines!(ax, p.t_0:p.T, sim.wage_path, label = "Wage")
-    lines!(ax, p.t_0:p.T, sim.consumption_path, label = "Consumption")
-    vspan!(ax, findall(isone, sim.n_path) .+ p.t_0 .- 1.5, findall(isone, sim.n_path) .+ p.t_0 .- 0.5, color = (:gray, 0.3))
-    Legend(fig[1, 2], ax, framevisible = false)
-    fig
+# Plot the results
+begin 
+    step = tstate.step
+    fig2 = Figure()
+    ax2 = Axis(fig2[1,1], xlabel = L"t", title = "Life-Cycle Profile") 
+    lines!(ax2, vec(time), vec(c), color = :green, label = L"c_t\quad (RL)")
+    #lines!(ax2, vec(time), vfi_c, color = :brown, label = L"c_t\quad (VFI)")
+    lines!(ax2, vec(time), exp.(ϵ[1,1:end-1]), color = :blue, label = L"y_t")
+    lines!(ax2, vec(time), a[1,2:end], color = :red, label = L"a_t\quad (RL)")
+    #lines!(ax2, vec(time), vfi_a[2:end], color = :purple, label = L"a_t\quad (VFI)")
+    Legend(fig2[1, 2], ax2, "Steps: $step", framevisible = false)
+    fig2
 end
