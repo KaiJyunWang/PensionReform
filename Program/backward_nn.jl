@@ -22,8 +22,8 @@ function data_expansion(;data, A)
 end
 
 function set_parameters(; β = 0.96f0, R = 1f0/0.96f0, σ = 0.01f0, ρ = 0f0, 
-    γ = 1f0, η = 1f0, mort = mortality([1.13, 64200, 0.1, 0.0002]),
-    T = 10, N = 1000, σ_ξ = 0f0, ϕ_1 = 0.9f0, ϕ_2 = 0f0, deg = 20)
+    γ = 1f0, η = 0.9f0, mort = mortality([1.13, 64200, 0.1, 0.0002]),
+    T = 10, N = 5000, σ_ξ = 0f0, ϕ_1 = 0f0, ϕ_2 = 0f0, deg = 10)
 
     ξ, w = gausshermite(10) .|> cu 
     ξ = permutedims(repeat(sqrt(2f0)*σ_ξ*ξ , 1, N), (2,1))
@@ -53,36 +53,59 @@ function set_parameters(; β = 0.96f0, R = 1f0/0.96f0, σ = 0.01f0, ρ = 0f0,
     a = a_tran.(data[1, :])
     ϵ = ϵ_tran.(data[2, :])
     n = data[3, :]
+    labor = CUDA.rand(N) .> 0.5f0
+    s_data = stack((a, ϵ, n, labor), dims = 1)
 
+    R_a = R * a
+    exp_ϵ = exp.(ϵ)
     new_ϵ = ρ * repeat(ϵ, 1, 10) + ξ
 
     return (; β = β, R = R, σ = σ, ρ = ρ, γ = γ, η = η, mort = mort, T = T, N = N, σ_ξ = σ_ξ, 
         ϕ_1 = ϕ_1, ϕ_2 = ϕ_2, ξ = ξ, w = w, data = data, u = u, smoother = smoother, 
-        new_ϵ = new_ϵ, dim = size(data, 1), A = A, a = a, ϵ = ϵ, n = n, 
+        new_ϵ = new_ϵ, R_a = R_a, exp_ϵ = exp_ϵ, labor = labor, 
+        dim = size(data, 1), A = A, a = a, ϵ = ϵ, n = n, s_data = s_data,
         a_tran = a_tran, ϵ_tran = ϵ_tran, a_tran_inv = a_tran_inv, ϵ_tran_inv = ϵ_tran_inv)
 end
 
 p = set_parameters()
 
 function one_period_loss(model_s, ps_s, st_s, data; p, model_v, ps_v, st_v)
-    @unpack β, R, σ, ρ, γ, η, mort, T, N, σ_ξ, ϕ_1, ϕ_2, ξ, w, u, smoother, new_ϵ, A, a, ϵ, n, a_tran, ϵ_tran, a_tran_inv, ϵ_tran_inv = p
+    @unpack β, R, σ, ρ, γ, η, mort, T, N, σ_ξ, ϕ_1, ϕ_2, ξ, w, u, smoother, new_ϵ, A, a, ϵ, n, a_tran, ϵ_tran, a_tran_inv, ϵ_tran_inv, s_data, R_a, exp_ϵ, labor = p
 
-    cp, labor = model_s(data, ps_s, st_s)[1][1, :], round.(model_s(data, ps_s, st_s)[1][2, :])
-    disposable = R*a + exp.(ϵ) .* labor
-    new_data = data_expansion(data = permutedims(cat(repeat(a_tran_inv.(disposable .* (1 .- cp)), 1, 10), ϵ_tran_inv.(new_ϵ + ξ), repeat(labor, 1, 10), dims = 3), (3,1,2)), A = A)
-    v = u.(disposable .* cp, labor) - min.(labor - n, 0)*ϕ_2 + β * dropdims(model_v(new_data, ps_v, st_v)[1], dims = 1) * w + smoother[:, 1] .* labor + smoother[:, 2] .* (1f0 .- labor)
+    cp = model_s(s_data, ps_s, st_s)[1]
+
+    disposable = R_a + exp_ϵ .* labor
+
+    new_data = data_expansion(data = permutedims(cat(repeat(a_tran_inv.(disposable .* (1 .- cp[1, :])), 1, 10), ϵ_tran_inv.(new_ϵ), repeat(labor, 1, 10), dims = 3), (3,1,2)), A = A)
+
+    EV = β * dropdims(model_v(new_data, ps_v, st_v)[1], dims = 1) * w
+
+    v = u.(disposable .* cp[1, :], labor) + min.(labor - n, 0f0) * ϕ_2 + EV 
+
     return -mean(v), st_s, ()
 end
 
+model_v = Chain(Dense(p.dim => 512, gelu), Dense(512 => 512, gelu), Dense(512 => 1))
+ps_v, st_v = Lux.setup(Xoshiro(2025), model_v) |> dev_gpu
+model_s = Chain(Dense(4 => 16, sigmoid), Dense(16 => 16, sigmoid), Dense(16 => 2, sigmoid))
+ps_s, st_s = Lux.setup(Xoshiro(2025), model_s) |> dev_gpu
+@btime one_period_loss(model_s, ps_s, st_s, p.s_data; p = p, model_v = model_v, ps_v = ps_v, st_v = st_v)
+
 # Set up the data for the model_v to approximate.
 function get_v_data(model_s, ps_s, st_s, data; p, model_v, ps_v, st_v)
-    @unpack β, R, σ, ρ, γ, η, mort, T, N, σ_ξ, ϕ_1, ϕ_2, ξ, w, u, smoother, new_ϵ, A, a, ϵ, n, a_tran, ϵ_tran, a_tran_inv, ϵ_tran_inv = p
+    @unpack β, R, σ, ρ, γ, η, mort, T, N, σ_ξ, ϕ_1, ϕ_2, ξ, w, u, smoother, new_ϵ, A, a, ϵ, n, a_tran, ϵ_tran, a_tran_inv, ϵ_tran_inv, s_data = p
 
-    cp, labor = model_s(data, ps_s, st_s)[1][1, :], round.(model_s(data, ps_s, st_s)[1][2, :])
-    disposable = R*a + exp.(ϵ) .* labor
-    new_data = data_expansion(data = permutedims(cat(repeat(a_tran_inv.(disposable .* (1 .- cp)), 1, 10), ϵ_tran_inv.(new_ϵ + ξ), repeat(labor, 1, 10), dims = 3), (3,1,2)), A = A)
-    v = u.(disposable .* cp, labor) - min.(labor - n, 0)*ϕ_2 + β*dropdims(model_v(new_data, ps_v, st_v)[1], dims = 1) * w
-    return (data, reshape(v, 1, N))
+    cp = model_s(s_data, ps_s, st_s)[1]
+
+    disposable = R_a + exp_ϵ .* labor
+
+    new_data = data_expansion(data = permutedims(cat(repeat(a_tran_inv.(disposable .* (1 .- cp[1, :])), 1, 10), ϵ_tran_inv.(new_ϵ), repeat(labor, 1, 10), dims = 3), (3,1,2)), A = A)
+
+    EV = β * dropdims(model_v(new_data, ps_v, st_v)[1], dims = 1) * w
+
+    v = u.(disposable .* cp[1, :], labor) + min.(labor - n, 0f0) * ϕ_2 + EV 
+    
+    return (data, reshape(new_EV, 1, N))
 end
 
 opt_v = AMSGrad()
@@ -93,7 +116,7 @@ function train_s(tstate::Training.TrainState, vjp, data, epochs; p, model_v, ps_
     for epoch in 1:epochs
         _, loss, _, tstate = Training.single_train_step!(vjp, ((model_s, ps_s, st_s, data) -> one_period_loss(model_s, ps_s, st_s, data; p = p, model_v = model_v, ps_v = ps_v, st_v = st_v)), data, tstate)
         if epoch == epochs || epoch % 10 == 0
-            @printf "Epoch: %3d \t Loss: %.5g\n" epoch loss
+            @printf "Epoch: %3d \t Loss: %.5g \n" epoch loss #norm(ComponentArray(Zygote.gradient(ps -> one_period_loss(model_s, ps, st_s, data; p = p, model_v = model_v, ps_v = ps_v, st_v = st_v)[1], ps_s)))  \t ‖∇ps‖: %.5g
         end
         epoch += 1
     end
@@ -123,8 +146,8 @@ function backward_nn(opt_v, opt_s, vjp_rule; v_epoch, s_epoch, p = p)
     @unpack β, R, σ, ρ, γ, η, mort, T, N, σ_ξ, ϕ_1, ϕ_2, ξ, w, data, u, smoother, new_ϵ = p
 
     # Neural networks
-    model_s = Chain(Dense(p.dim => 512, sigmoid), Dense(512 => 512, sigmoid), Dense(512 => 2, sigmoid))
-    model_v = Chain(Dense(p.dim => 512, gelu), Dense(512 => 512, gelu), Dense(512 => 1))
+    model_s = Chain(Dense(3 => 32, sigmoid), Dense(32 => 32, sigmoid), Dense(32 => 2, sigmoid))
+    model_v = Chain(Dense(p.dim => 256, gelu), Dense(256 => 256, gelu), Dense(256 => 1))
 
     # Arrays to store the data for the last training 
     value_data = zeros(N, T) |> cu
@@ -141,9 +164,9 @@ function backward_nn(opt_v, opt_s, vjp_rule; v_epoch, s_epoch, p = p)
         # Train the policy function
         ps_s, st_s = Lux.setup(Xoshiro(2025), model_s) |> dev_gpu
         tstate_s = Training.TrainState(model_s, ps_s, st_s, opt_s)
-        tstate_s = train_s(tstate_s, vjp_rule, data, s_epoch; p = p, model_v = model_v, ps_v = ps_v, st_v = st_v) 
+        tstate_s = train_s(tstate_s, vjp_rule, p.s_data, s_epoch; p = p, model_v = model_v, ps_v = ps_v, st_v = st_v) 
 
-        policy_data[:, :, t] = model_s(p.data, ps_s, st_s)[1]
+        policy_data[:, :, t] = model_s(p.s_data, ps_s, st_s)[1]
 
         # Approximating the value function
         temp_v_data = get_v_data(model_s, ps_s, st_s, data; p = p, model_v = model_v, ps_v = ps_v, st_v = st_v)
@@ -157,18 +180,40 @@ function backward_nn(opt_v, opt_s, vjp_rule; v_epoch, s_epoch, p = p)
     return policy_data, value_data
 end
 
-@btime one_period_loss(model_s, ps_s, st_s, p.data; p = p, model_v = model_v, ps_v = ps_v, st_v = st_v)
+# Neural networks
+model_s = Chain(Dense(3 => 32, sigmoid), Dense(32 => 32, sigmoid), Dense(32 => 2, sigmoid))
+model_v = Chain(Dense(p.dim => 256, gelu), Dense(256 => 256, gelu), Dense(256 => 1))
 
-s_data, v_data = backward_nn(opt_v, opt_s, vjp_rule; v_epoch = 50000, s_epoch = 3000, p = p)
+# Train the value function for the last period 
+ps_v, st_v = Lux.setup(Xoshiro(2025), model_v) |> dev_gpu
+tstate_v = Training.TrainState(model_v, ps_v, st_v, opt_v)
+tstate_v = train_v(tstate_v, vjp_rule, (p.data, CUDA.zeros(1, p.N)), 50000)
+
+# Train the policy function
+ps_s, st_s = Lux.setup(Xoshiro(2025), model_s) |> dev_gpu
+tstate_s = Training.TrainState(model_s, ps_s, st_s, opt_s)
+tstate_s = train_s(tstate_s, vjp_rule, p.s_data, 2000; p = p, model_v = model_v, ps_v = ps_v, st_v = st_v) 
+model_s(p.s_data, ps_s, st_s)[1]
+
+# Approximating the value function
+temp_v_data = get_v_data(model_s, ps_s, st_s, p.data; p = p, model_v = model_v, ps_v = ps_v, st_v = st_v)
+ps_v, st_v = Lux.setup(Xoshiro(2025), model_v) |> dev_gpu
+tstate_v = Training.TrainState(model_v, ps_v, st_v, opt_v)
+tstate_v = train_v(tstate_v, vjp_rule, temp_v_data, 50000)
+model_v(p.data, ps_v, st_v)[1]
+temp_v_data[1]
+
+s_data, v_data = backward_nn(opt_v, opt_s, vjp_rule; v_epoch = 50000, s_epoch = 1000, p = p)
+
 # Check outcomes
-period = 5
-disposable = p.R*p.a .+ exp.(p.ϵ) .* round.(s_data[1,:,period])
+period = 1
+disposable = p.R*p.a .+ exp.(p.ϵ) .* s_data[1,:,period]
 test_s = (hcat(s_data[1,:,period] .* disposable, p.a) |> Array)[sortperm((hcat(s_data[1,:,period] .* disposable, p.a) |> Array)[:, 2]), :]
 test_v = (hcat(v_data[:,period], p.a) |> Array)[sortperm((hcat(v_data[:,period], p.a) |> Array)[:, 2]), :]
 begin
     fig = Figure()
     ax = CairoMakie.Axis(fig[1,1])
-    lines!(ax, test_s[:, 2], test_s[:, 1])
+    lines!(ax, test_v[:, 2], test_v[:, 1])
     fig
 end
 sum(s_data[2, :, :] .< 0.5)
