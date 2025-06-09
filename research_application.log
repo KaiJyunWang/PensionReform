@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.12) (preloaded format=pdflatex 2023.1.14)  17 JAN 2024 08:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.12) (preloaded format=pdflatex 2023.1.14)  27 JAN 2024 14:33
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -243,7 +243,35 @@ Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 \Gm@layouthoffset=\dimen158
 \Gm@layoutvoffset=\dimen159
 \Gm@dimlist=\toks30
- (C:\Users\kevin\MiKTeX\tex/latex/geometry\geometry.cfg))
+ (C:\Users\kevin\MiKTeX\tex/latex/geometry\geometry.cfg)) (C:\Users\kevin\MiKTeX\tex/latex/mathtools\mathtools.sty
+Package: mathtools 2022/06/29 v1.29 mathematical typesetting tools
+ (C:\Users\kevin\MiKTeX\tex/latex/tools\calc.sty
+Package: calc 2017/05/25 v4.3 Infix arithmetic (KKT,FJ)
+\calc@Acount=\count276
+\calc@Bcount=\count277
+\calc@Adimen=\dimen160
+\calc@Bdimen=\dimen161
+\calc@Askip=\skip63
+\calc@Bskip=\skip64
+LaTeX Info: Redefining \setlength on input line 80.
+LaTeX Info: Redefining \addtolength on input line 81.
+\calc@Ccount=\count278
+\calc@Cskip=\skip65
+) (C:\Users\kevin\MiKTeX\tex/latex/mathtools\mhsetup.sty
+Package: mhsetup 2021/03/18 v1.4 programming setup (MH)
+)
+\g_MT_multlinerow_int=\count279
+\l_MT_multwidth_dim=\dimen162
+\origjot=\skip66
+\l_MT_shortvdotswithinadjustabove_dim=\dimen163
+\l_MT_shortvdotswithinadjustbelow_dim=\dimen164
+\l_MT_above_intertext_sep=\dimen165
+\l_MT_below_intertext_sep=\dimen166
+\l_MT_above_shortintertext_sep=\dimen167
+\l_MT_below_shortintertext_sep=\dimen168
+\xmathstrut@box=\box54
+\xmathstrut@dim=\dimen169
+)
 
 Package geometry Warning: Over-specification in `h'-direction.
     `width' (597.50787pt) is ignored.
@@ -254,101 +282,101 @@ Package geometry Warning: Over-specification in `v'-direction.
 
 (C:\Users\kevin\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def
 File: l3backend-pdftex.def 2022-10-26 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count276
-\l__pdf_internal_box=\box54
+\l__color_backend_stack_int=\count280
+\l__pdf_internal_box=\box55
 ) (research_application.aux)
 \openout1 = `research_application.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C00/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C05/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C09/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C10/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C20/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C19/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C40/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C42/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C43/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C50/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C52/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C49/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C60/mj/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C61/mj/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C63/mj/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C64/mj/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C65/mj/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C70/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C31/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C32/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C33/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C34/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C35/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C36/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C37/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C80/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C81/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C01/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C11/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C21/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C41/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for C62/song/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C00/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C05/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C09/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C10/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C20/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C19/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C40/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C42/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C43/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C50/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C52/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C49/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C60/mj/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C61/mj/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C63/mj/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C64/mj/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C65/mj/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C70/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C31/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C32/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C33/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C34/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C35/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C36/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C37/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C80/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C81/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C01/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C11/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C21/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C41/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for C62/song/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
  (C:\Users\kevin\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count277
-\scratchdimen=\dimen160
-\scratchbox=\box55
-\nofMPsegments=\count278
-\nofMParguments=\count279
+\scratchcounter=\count281
+\scratchdimen=\dimen170
+\scratchbox=\box56
+\nofMPsegments=\count282
+\nofMParguments=\count283
 \everyMPshowfont=\toks31
-\MPscratchCnt=\count280
-\MPscratchDim=\dimen161
-\MPnumerator=\count281
-\makeMPintoPDFobject=\count282
+\MPscratchCnt=\count284
+\MPscratchDim=\dimen171
+\MPnumerator=\count285
+\makeMPintoPDFobject=\count286
 \everyMPtoPDFconversion=\toks32
 ) (C:\Users\kevin\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
@@ -356,7 +384,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
  (C:\Users\kevin\MiKTeX\tex/latex/00miktex\epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-\c@maskedRefs=\count283
+\c@maskedRefs=\count287
  (C:\Users\kevin\MiKTeX\tex/latex/apacite\english.apc
 File: english.apc 2013/07/21 v6.03 apacite language file
 LaTeX Info: Redefining \BPBI on input line 129.
@@ -403,57 +431,48 @@ File: UTF8.enc 2021/10/16 4.8.5
 ) (C:\Users\kevin\MiKTeX\tex/latex/cjk/UTF8\UTF8.chr
 File: UTF8.chr 2021/10/16 4.8.5
 )
-LaTeX Font Info:    Trying to load font information for C70+bkai on input line 26.
+LaTeX Font Info:    Trying to load font information for C70+bkai on input line 28.
  (C:\Users\kevin\MiKTeX\tex/latex/cjk/UTF8\c70bkai.fd
 File: c70bkai.fd 2021/10/16 4.8.5
 ) (C:\Users\kevin\MiKTeX\tex/latex/cjk/UTF8\c70bkai.fdx
 File: c70bkai.fdx 2021/10/16 4.8.5
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 26.
+<tw_pension_pay.png, id=63, 826.287pt x 384.2355pt>
+File: tw_pension_pay.png Graphic file (type png)
+<use tw_pension_pay.png>
+Package pdftex.def Info: tw_pension_pay.png  used on input line 42.
+(pdftex.def)             Requested size: 341.43437pt x 158.76878pt.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 43.
  (C:\Users\kevin\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 26.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 43.
  (C:\Users\kevin\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
+) [1
 
-LaTeX Warning: No \author given.
-
-<tw_pension_pay.png, id=59, 826.287pt x 384.2355pt>
-File: tw_pension_pay.png Graphic file (type png)
-<use tw_pension_pay.png>
-Package pdftex.def Info: tw_pension_pay.png  used on input line 39.
-(pdftex.def)             Requested size: 341.43437pt x 158.76878pt.
-[1
-
-{C:/Users/kevin/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map} <./tw_pension_pay.png>] [2] [3] [4]
-Overfull \hbox (3.40408pt too wide) in paragraph at lines 192--197
-\C70/bkai/m/n/12/51 v \C70/bkai/m/n/12/4e -$\OML/cmm/m/it/12 ^^Y[]$\C70/bkai/m/n/12/70 ∫ \C70/bkai/m/n/12/65 ? \C70/bkai/m/n/12/5e ú \C70/bkai/m/n/12/89 Å \C70/bkai/m/n/12/6c B \C70/bkai/m/n/12/96 « \C70/bkai/m/n/12/4e ; \C70/bkai/m/n/12/6b œ \C70/bkai/m/n/12/67 ^^_ \C70/bkai/m/n/12/4e ÿ \C70/bkai/m/n/12/51 ˙ \C70/bkai/m/n/12/76 Ñ \C70/bkai/m/n/12/52 ﬁ \C70/bkai/m/n/12/4f › \C70/bkai/m/n/12/8c ª \C70/bkai/m/n/12/75 ( \C70/bkai/m/n/12/ff ^^L$\OML/cmm/m/it/12 psr[]$\C70/bkai/m/n/12/70 ∫ \C70/bkai/m/n/12/65 ? \C70/bkai/m/n/12/5e ú \C70/bkai/m/n/12/66 / \C70/bkai/m/n/12/54 & \C70/bkai/m/n/12/5b Ê \C70/bkai/m/n/12/88 L \C70/bkai/m/n/12/5e t \C70/bkai/m/n/12/91 — \C70/bkai/m/n/12/65 9 \C70/bkai/m/n/12/97 i\OT1/cmr/m/n/12 ($\OML/cmm/m/it/12 psr[] \OT1/cmr/m/n/12 =
- []
-
-[5] (research_application.bbl [6]
+{C:/Users/kevin/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map} <./tw_pension_pay.png>] [2] [3] [4] [5] [6] (research_application.bbl [7]
 
 LaTeX Font Warning: Font shape `C70/bkai/m/it' undefined
-(Font)              using `C70/bkai/m/n' instead on input line 249.
+(Font)              using `C70/bkai/m/n' instead on input line 174.
 
-) [7] (research_application.aux)
+) [8] (research_application.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) 
 Here is how much of TeX's memory you used:
- 7450 strings out of 476406
- 105084 string characters out of 2800354
- 1886787 words of memory out of 3000000
- 27433 multiletter control sequences out of 15000+600000
- 567750 words of font info for 229 fonts, out of 8000000 for 9000
+ 8068 strings out of 476406
+ 116493 string characters out of 2800354
+ 1882787 words of memory out of 3000000
+ 28045 multiletter control sequences out of 15000+600000
+ 565277 words of font info for 220 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 56i,16n,62p,277b,1439s stack positions out of 10000i,1000n,20000p,200000b,80000s
+ 56i,16n,62p,277b,1443s stack positions out of 10000i,1000n,20000p,200000b,80000s
 <C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu30.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu4e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu4f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu50.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu51.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu52.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu53.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu54.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu55.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu56.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu57.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu58.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu59.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5b.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5c.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5d.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu5f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu60.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu61.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu62.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu63.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu64.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu65.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu66.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu67.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu68.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu69.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6b.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6c.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6d.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu6f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu70.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu71.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu72.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu73.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu74.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu75.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu76.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu77.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu78.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu79.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7b.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7c.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7d.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu7f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu80.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu81.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu82.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu84.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu85.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu86.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu87.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu88.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu89.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8b.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8c.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8d.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu8f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu90.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu91.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu95.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu96.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu97.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu98.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu99.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu9a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu9e.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiu9f.pfb><C:/Users/kevin/MiKTeX/fonts/type1/arphic/bkaiu/bkaiuff.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/cm/cmti12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on research_application.pdf (7 pages, 934397 bytes).
+Output written on research_application.pdf (8 pages, 932952 bytes).
 PDF statistics:
- 555 PDF objects out of 1000 (max. 8388607)
+ 558 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  310 words of extra memory for PDF output out of 10000 (max. 10000000)
 

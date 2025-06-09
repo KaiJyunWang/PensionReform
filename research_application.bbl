@@ -1,30 +1,6 @@
 \begin{thebibliography}{}
 
 \bibitem [\protect \citeauthoryear {%
-Aaron%
-}{%
-Aaron%
-}{%
-{\protect \APACyear {1966}}%
-}]{%
-aaron1966}
-\APACinsertmetastar {%
-aaron1966}%
-\begin{APACrefauthors}%
-Aaron, H.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{1966}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {The Social Insurance Paradox} {The social insurance
-  paradox}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{The Canadian Journal of Economics and Political Science
-  / Revue canadienne d'Economique et de Science politique}{32}{3}{371--374}.
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
 Burtless%
 }{%
 Burtless%
@@ -126,33 +102,6 @@ Gustman, A\BPBI L.%
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
-Low%
-\ \BBA {} Pistaferri%
-}{%
-Low%
-\ \BBA {} Pistaferri%
-}{%
-{\protect \APACyear {2015}}%
-}]{%
-pistaferri2015}
-\APACinsertmetastar {%
-pistaferri2015}%
-\begin{APACrefauthors}%
-Low, H.%
-\BCBT {}\ \BBA {} Pistaferri, L.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{2015}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {Disability Insurance and the Dynamics of the Incentive
-  Insurance Trade-Off} {Disability insurance and the dynamics of the incentive
-  insurance trade-off}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{The American Economic Review}{105}{10}{2986--3029}.
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
 Rust%
 \ \BBA {} Phelan%
 }{%
@@ -177,30 +126,6 @@ Rust, J.%
   affect retirement behavior in a world of incomplete markets}.{\BBCQ}
 \newblock
 \APACjournalVolNumPages{Econometrica}{65}{4}{781--831}.
-\PrintBackRefs{\CurrentBib}
-
-\bibitem [\protect \citeauthoryear {%
-Samuelson%
-}{%
-Samuelson%
-}{%
-{\protect \APACyear {1958}}%
-}]{%
-samuelson1958}
-\APACinsertmetastar {%
-samuelson1958}%
-\begin{APACrefauthors}%
-Samuelson, P\BPBI A.%
-\end{APACrefauthors}%
-\unskip\
-\newblock
-\APACrefYearMonthDay{1958}{}{}.
-\newblock
-{\BBOQ}\APACrefatitle {An Exact Consumption-Loan Model of Interest with or
-  without the Social Contrivance of Money} {An exact consumption-loan model of
-  interest with or without the social contrivance of money}.{\BBCQ}
-\newblock
-\APACjournalVolNumPages{Journal of Political Economy}{66}{6}{467--482}.
 \PrintBackRefs{\CurrentBib}
 
 \bibitem [\protect \citeauthoryear {%
