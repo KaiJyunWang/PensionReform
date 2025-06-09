@@ -1,0 +1,436 @@
+\documentclass[12pt]{article}
+\usepackage{CJKutf8}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{accents}
+\usepackage{graphicx}
+\usepackage{dsfont}
+\usepackage[natbibapa]{apacite}
+\usepackage{geometry}
+\geometry{
+ a4paper,
+ total={210mm,297mm}, 
+ left=25.4mm,
+ right=25.4mm,
+ top=25.4mm,
+ bottom=25.4mm
+}
+\usepackage{lipsum}
+\usepackage{setspace}
+\usepackage{booktabs,tabularx}
+\usepackage[bitstream-charter]{mathdesign}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor= blue,
+    citecolor= blue,
+    urlcolor= blue
+}
+\usepackage{comment}
+
+\newcommand{\abs}[1]{\left|#1\right|}
+
+
+\title{Understanding the Effects of Pension Reforms: A 
+Structural Model Approach}
+\author{Kai-Jyun Wang}
+\date{\today}
+
+\begin{document}
+\setstretch{1.2}
+\begin{CJK*}{UTF8}{bsmi}
+\maketitle
+
+\section{Introduction}
+
+In recent years, due to factors such as extended life 
+expectancy and declining birth rates, pension systems in 
+countries around the world have faced pressure for reform 
+and Taiwan is no exception. As a consequence, the effect of 
+pension reforms are widely investigated in many countries. 
+However, to our knowledge, one of the major pension systems 
+in Taiwan, named as Labor Insurance, has never been studied. 
+What is the effect of the pension reforms of the Labor 
+Insurance on the retirement decision and the private 
+savings? And, particularly, how does the crowd respond to 
+the information of the reforms?
+
+These questions are in particular important under the 
+institution after 2009, when the institution has been 
+changed so that anyone who had participated in the Labor 
+Insurance and continued after 2009 could choose to retire 
+with two types of the pension schemes, a lump-sum scheme 
+and a monthly pension scheme. For example, consider a person 
+encountering an unpredictable benefit reduction and a 
+predicted one. The former may induce a large shift in both 
+saving and labor supply, while the later may only respond 
+with a moderate or tiny shift. The later can even choose to 
+retire earlier or shift his choice from a monthly pension 
+scheme to a lump-sum scheme before the actual reform comes, 
+lest he suffers from the possibly incoming reforms. 
+
+To answer these questions, we construct a life-cycle model 
+of households choosing to participate the labor market, the 
+amount of savings, and updating their believes on the chance 
+of facing a reform. The model incorporates the 
+heterogeneities in the discount factor, the preference of 
+leisure and the prior believes of the occurrence of the 
+reform. Our model also captures the complex structure of the 
+pension schemes.
+
+\section{Background}
+
+In 2009, Labor Insurance, one of the major pension system in 
+Taiwan, transitioned to a pension system adopting the defined 
+benefit system. After the transition, the workers who had 
+attended the Labor Insurance before 2009 can choose to follow 
+the new rule or the old one while those had not can only 
+follow the new one. 
+
+Before the transition in 2009, the conditions to determine 
+whether one can receive the benefit is quite complicated. 
+One can only get paid if one of the followings is satisfied: 
+(i) Male working for at least 1 year and aging 60 (55 for 
+females). (ii) Working for at least 15 years and aging 55. 
+(iii) Working at the same company for at least 25 years. 
+(iv) Working for at least 25 years and aging 50.
+
+A worker being eligible for the benefit would receive a 
+lump-sum transfer form the government when retiring. The 
+amount depends on the working years and the average monthly 
+insurance salary\footnote{The average monthly insurance 
+salary is calculated by the grades of Labor Insurance 
+salary, which ranges from 27,470 NTD to 45,800 NTD in 2024 
+and is adjusted annually by the administration.} in three 
+years before the retirement. The benefit formula is
+\begin{equation}
+    \text{pb}_t = \text{AMIS}_t\times
+    \max\{\text{WY}_t,\ 2\text{WY}_t-15\},
+\end{equation}
+where $\text{pb}_t$ is the pension benefit, $\text{AMIS}_t$ 
+is the average monthly insurance salary and $\text{WY}_t$ is 
+the working years.
+
+After 2009, the conditions for applying the benefit was 
+canceled and the rule became a dichotomy that one may 
+follows the defined benefit pension rule or the lump-sum 
+payment similar to the one before 2009. To access the pension 
+rule, one needs to work for at least 15 years. The benefit 
+formula for the lump-sum rule and the monthly pension rule is 
+\begin{equation}\label{eq:pblumpsum}
+    \text{pb}_t = \text{AMIS}_t\times
+    \max\{\text{WY}_t,\ 2\text{WY}_t-15\},
+\end{equation}
+\begin{equation}\label{eq:pbmonthly}
+    \text{pb}_t = 
+    \max\{\text{AMIS}_t\times\text{WY}_t\times0.775\%+3000,\ 
+    \text{AMIS}_t\times\text{WY}_t\times 1.55\%\},
+\end{equation}
+respectively. Also, $\text{AMIS}_t$ is calculated with the 
+highest 60 months' wage in the career.
+
+Additionally, the pension benefits are influenced by the 
+standard retirement age. Individuals who have accrued at 
+least 15 years of working experience and opt to claim 
+benefits before reaching the standard retirement age will 
+encounter a reduction of 4\% for each year prior to this 
+benchmark. Conversely, those who choose to postpone 
+retirement beyond the standard age will see their benefits 
+increase by 4\% per year. Eligibility to claim benefits 
+spans a window of five years before and after the standard 
+retirement age. Since 2018, the standard retirement age has 
+been gradually increasing by one year for every two years.
+
+\section{Related Literature}
+
+Our research is connected to various papers focusing on 
+pension, retirement, and saving. The pension system typically 
+exerts two potentially offsetting effects on individuals' 
+saving behavior. On one hand, pension wealth may directly 
+substitute personal wealth; however, conversely, the pension 
+system often provides individuals incentives to delay 
+retirement, thereby extending the period of asset 
+accumulation and increasing saving. Consequently, the impact 
+of pension reform on retirement and private savings is of 
+significant importance and the related literature is 
+discussed in this chapter. Additionally, the research 
+conducted in Taiwan is presented towards the end of this 
+chapter.
+
+In early work, \cite{feldstein1974} indicates that the Social 
+Security pension crowded out 30 to 50 percent of personal 
+saving using the aggregate time series data from the United 
+States. Subsequently, \cite{attanasio2003} observes that the 
+reduction in pension wealth leads to an increase in the 
+saving rate in Italy's pension reform in 1992, where the 
+offset is about 0.35. \cite{aguila2011} shows that the shift 
+from the pay-as-you-go system to personal retirement account 
+system in Mexico's 1997 reform increases the pension wealth 
+and crowds the private savings for the lower-income worker. 
+In the mean time, some recent studies suggest that the 
+crowd-out effect is minimal or even nonexistent. For 
+instance, \cite{feng2011} examines the reform in China from 
+1995 to 1997 and reports a relatively low offsetting effect 
+ranging from 0.1 to 0.16. Similarly, \cite{chetty2014} 
+discovers no substitution between private savings and public 
+pensions following Denmark's 1999 reduction in retirement 
+pension subsidies. In another study, \cite{lacowska2018} 
+identifies a moderate crowd-out effect of 0.3 resulting from 
+Poland's 1999 pension reform. 
+
+In another related branch concerning retirement decisions, 
+early studies such as \cite{burtless1986} and 
+\cite{gustman1986} delve into the explanation of the two-peak 
+phenomenon in retirement age. They attribute this phenomenon 
+to the heterogeneity of workers' preferences and the varying 
+returns of Social Security for each retirement age. Building 
+on this foundation, \cite{rust1997} developed a model where 
+agents are unable to engage in intertemporal substitution. 
+This work highlights that the incompleteness of the medical 
+insurance market may compel workers to prolong their careers 
+until getting access to Medicare. \cite{french2011} further 
+confirms the results in an estimated life-cycle model 
+consisting of labor and savings decisions. \cite{haan2014} 
+calculated that in order to relieve the fiscal burden due to 
+the increasing life expectancy, either postponing the 
+retirement threshold age by 3.76 years or reduce the benefit 
+by 26.8\% is sufficient. \cite{daminato2023} estimates a 
+life-cycle model incorporating savings, portfolio choice 
+and retirement through a quasi-experimental variation from 
+pension reforms in Italy for identification. The model 
+predicts a significant social security wealth effect on 
+retirement. 
+
+For the research conducted in Taiwan, \cite{yang2009} uses 
+data from the Manpower Utilization Survey to investigate the 
+impact of changes in old and new Labor Pension systems on 
+wages. The results show that, overall, there is no 
+significant change in wages within two years of the 
+implementation of the new and old systems. However, for 
+workers who only enter the workforce after the changes, 
+their wages decrease significantly, roughly in proportion to 
+the employer contribution rate in the new system. 
+\cite{reform2017} calibrates a general equilibrium model to 
+investigates the reforms encompassing Civil Servant and 
+Teacher Insurance and Labor Insurance. The simulation result 
+shows that after the reforms, overall employment levels 
+declined. The decrease in real wages results in the reduced 
+labor supply, leading to an increase in the overall 
+unemployment rate. \cite{cheng2020} also conducts a 
+counterfactual analysis using a calibrated general 
+equilibrium model, finding that the pension debt can be 
+balanced if the government increases income taxes by 5.4\%, 
+increases consumption taxes by 6.2\%, increases pension taxes 
+by 9.3\%, or decreases the pension benefits by 23.5\%.
+
+\section{The Model}
+Consider an individual who aims at maximizing his expected 
+lifetime utility at age \(t = 40,\ldots,T\), where \(T\) is 
+one's maximum lifespan. These individuals maximize their 
+utility by choosing their consumption \(c\), labor supply 
+\(n\) (in extensive margin), pension type \(p\) and their 
+bequests \(b\) to their descendants. At period \(t\), the 
+utility flow is 
+\begin{equation}
+    u(c_t,l_t) = \frac{1}{1-\gamma}(c_t^\eta l_t^{1-\eta})^{1-\gamma},
+\end{equation}
+where \(l_t\) is leisure. We allow \(\eta\) to vary across 
+individuals. For individuals with higher \(\eta\), they value 
+their consumption more comparing to leisure.
+
+Leisure is normalized and determined by
+\begin{equation}
+    l_t = 1 - \frac{260}{364}n_t.
+\end{equation}
+
+When a worker dies, he obtains utility from leaving his 
+remaining assets, \(a_t\), as bequests. The functional form 
+follows \cite{de-nardi2004}.
+\begin{equation}
+    b(a_t) = \frac{\theta_b}{1-\gamma}(\kappa+a_t)^{1-\gamma}.
+\end{equation}
+
+The individual faces survival risk depends on his age. 
+Following \cite{thatcher1999}, we model their mortality 
+function \(\mu\) as
+\begin{equation}
+    \mu_t = \mu(t) = \frac{\theta_1}{1+\theta_2\exp(-\theta_3t)} + \theta_4.
+\end{equation}
+Note that we determine the maximum lifespan through the law 
+of mortality. That is, \(T = \min\{t\mid \mu(t) \geq 1\}\). 
+
+The worker's productivity is
+\begin{align}
+    \log(w_{it}) &= \max\{X_{it}\delta + f_i + \epsilon_{it},\ \log(\underaccent{\bar}{w})\},\\
+    \epsilon_{it} &= \rho\epsilon_{i,t-1} + \xi_{it},\label{eq:permanent-income-shock}
+\end{align}
+where \(X_{it}\) includes age and education, \(f_i\) captures 
+the unobserved heterogeneity of productivity across 
+individuals and \(\xi_{it}\overset{iid}{\sim}N(0,\sigma_\xi^2)\). 
+Besides, the Labor Standards Act sets the minimum wage, 
+\(\underaccent{\bar}{w}_t\); hence the real wage that one 
+receives is the maximum between the real productivity and 
+the minimum wage \(\underaccent{\bar}{w}\).
+
+Also, since the Labor Standards Act allows the employers to 
+retire the workers aging 65, we assume that if the real 
+productivity of a worker is lower than 
+\(\underaccent{\bar}{w}\) and the worker ages 65, he is 
+retired by the employers. To simplify the model, once the 
+worker stops working after 65, he cannot return to work. 
+
+Whenever an individual is eligible for the pension, he can 
+choose between two pension plans as (\ref{eq:pblumpsum}) or 
+(\ref{eq:pbmonthly}) and retire. We denote his pension status 
+as \(p_t\), following
+\begin{equation}
+    p_{t+1}\in
+    \begin{cases}
+        \{1,2\},\quad & p_t=1, \\
+        \{4\},\quad & p_t=2,4, \\
+        \{3\},\quad &p_t=3\text{ or }p_t=1,\text{WY}_t\geq15.
+    \end{cases}
+\end{equation}
+Thus 
+\begin{equation}
+    \text{pb}_t = 
+    \begin{cases}
+        0, &\quad p_t=1,4,\\
+        \text{AMIS}_t\times\max\{\text{WY}_t,\ 2\text{WY}_t-15\}, &\quad p_t=2,\\
+        \max\{\text{AMIS}_t\times\text{WY}_t\times0.775\%+3000,\ \text{AMIS}_t\times\text{WY}_t\times 1.55\%\}, &\quad p_t=3.
+    \end{cases}
+\end{equation}
+
+The law of motion of the \(\text{AMIS}_t\) is defined as 
+\begin{equation}
+    \text{AMIS}_{t+1} = 
+    \begin{cases}
+        \frac{\text{WY}_t}{\text{WY}_t+n_t}\text{AMIS}_t + \frac{n_t\text{CMIS}_t}{\text{WY}_t+n_t}, \quad &\text{WY}_t<5,\\
+        \text{AMIS}_t + \frac{1}{5}\max\{0,\text{CMIS}_tn_t-\text{LMIS}_t\}, \quad &\text{WY}_t\geq5,
+    \end{cases}
+\end{equation}
+where \(\text{CMIS}_t\) is a stair function of the wage with 
+a ceiling and a floor, \(\text{LMIS}_t\) is the lowest salary 
+among past 5 years and \(\text{WY}_t\) is the work year. That 
+is,
+\begin{align}
+    \text{LMIS}_{t+1} &= \max\{\text{LMIS}_t,\text{CMIS}_t\},\\
+    \text{WY}_{t+1} &= \text{WY}_t + n_t.
+\end{align}
+
+An individual faces several budget constraints,
+\begin{align}
+    c_t + a_{t+1} &= (1+r)a_t + \text{pb}_t + w_tn_t - 0.2\times\text{CMIS}_tn_t\tau - \phi_l\mathds{1}\{n_t-n_{t-1}=1\},\label{eq:asset-accumulation}\\
+    a_{t+1} &\geq 0,\label{eq:no-borrow}\\
+    c_t &\geq \underaccent{\bar}{c}\label{eq:cfloor},
+\end{align}
+where \(\phi_l\) is the transition cost of starting to work 
+and \(\underaccent{\bar}{c}\) is the consumption floor. We 
+assume that an individual cannot borrow against his future 
+income including wage and pension. 
+
+In addition, the individual in our model also considers the 
+uncertainty of reforms. We simplify this uncertainty to be a 
+binary case, either reformed pension scheme (\(R_t = 1\)) and 
+unreformed scheme (\(R_t = 0\)), where the reformed scheme 
+can be in several types such as reducing the benefit, 
+increasing the standard retirement age, or increasing the 
+pension tax. We assume that there are two types of 
+governments, either a high chance (\(p_H\)) or a low chance 
+(\(p_L\)) to reform. Let \(\pi_t\) be the prior of the reform 
+occurring next period. We assume that the individuals update 
+\(\pi_t\) in a Bayesian manner according to the information 
+that he receives. That is, we assume that the news is either 
+positive or negative, following a Bernoulli distribution that 
+is heterogeneous in different types of governments. The 
+updating rule is 
+\begin{equation}\label{eq:update}
+    \begin{split}
+        \pi_{t+1} 
+        &= \frac{\Pr(z_t, R_t\mid H)\pi_t}{\Pr(z_t, R_t\mid H)\pi_t + \Pr(z_t, R_t\mid L)(1-\pi_t)} \\
+        &= \frac{\Pr(z_t\mid R_t,H)\Pr(R_t\mid H)\pi_t}{\Pr(z_t\mid R_t,H)\Pr(R_t\mid H)\pi_t + \Pr(z_t\mid R_t,L)\Pr(R_t\mid L)(1-\pi_t)}\\
+        &= \frac{p(\#(z_t=1);\abs{z_t},p_{z,H})p_H \pi_t}{p(\#(z_t=1);\abs{z_t},p_{z,H})p_H \pi_t + p(\#(z_t=1);\abs{z_t},p_{z,L})p_L(1-\pi_t)},
+    \end{split}
+\end{equation}
+where \(z_t\) stands for the independent and identically 
+distributed drawn sequence of news in period \(t\), $\#$ is 
+the counting function, $\abs{\cdot}$ is the length of the 
+sequence and $p_{z,H}, p_{z,L}$ are the prbablities of 
+positive news under the different types of governments. 
+The reformed state is treated as an absorbing state for both 
+types of the governments. 
+
+Let \(\beta\) be the time preference, we may write the 
+individual's problem recursively as
+\begin{equation}
+    \begin{split}
+        V_t(x_t,R_t) = \max_{c_t,n_t,p_t}& \biggl\{u(c_t,1-\frac{260}{364}n_t) + \beta\mu_tb(a_{t+1}) \\
+        &+ \beta(1-\mu_t)\biggl[\pi_t\int V_{t+1}(x_{t+1},R_{t+1}=1)\:dF(x_{t+1}\mid x_t,c_t,n_t,p_t,t) \\
+        &+ (1-\pi_t)\int V_{t+1}(x_{t+1},R_{t+1}=0)\:dF(x_{t+1}\mid x_t,c_t,n_t,p_t,t)\biggr] \biggr\}
+    \end{split}
+\end{equation}
+subject to equations (\ref{eq:no-borrow}) and 
+(\ref{eq:cfloor}). We also allow the time preference and the 
+prior of reform to vary across individuals. The vector 
+\(x_t=\left(a_t,n_{t-1},p_{t-1},\text{WY}_t, \text{AMIS}_t,
+\text{LMIS}_t,\epsilon_t\right)\) contains the state variables 
+whose law of motions follow equations 
+(\ref{eq:permanent-income-shock}) to 
+(\ref{eq:asset-accumulation}) and (\ref{eq:update}). The 
+solution of the model consists of the saving rules, work 
+rules and pension application rules. The model is solved 
+numerically using value function iteration. Linear 
+interpolations are used in iterations in order to approximate 
+the continuous state variables.
+
+
+\section{Estimation}
+Due to the complexity of the model, we adopt a two-step 
+approach. In the first step, we estimate the wage equation 
+and the mortality law outside of the main model. To estimate 
+the main model, we use the simulated method of moments (SMM) 
+approach. The method consists of two loops, the inner loop 
+and the outer loop. In the inner loop, we fix the estimated 
+parameters and solve the policy function under the parameters 
+to obtain the simulated moments. Next, in the outer loop, the 
+parameters are updated to minimize the distance between the 
+simulated moments and the real moments. 
+
+\subsection{Wage Equation} 
+The main issue in estimating the wage equation is the 
+selection bias problem. 
+
+\subsection{Mortality Law} 
+The mortality parameters $\theta = (\theta_1, \theta_2, 
+\theta_3, \theta_4)$ are estimated by the maximum liklihood 
+estimation. The likelihood function is 
+\begin{equation}
+    \mathcal{L}(\theta) = \prod_{i=1}^N\prod_{t=40}^{T_i}\mu_t^{d_{it}}(1-\mu_t)^{1-d_{it}},
+\end{equation}
+where \(d_{it}\) is the indicator of the individual \(i\)'s 
+survival status at age \(t\). 
+
+\subsection{Reform Signal}
+For the reform signal distributions of different types of 
+governments, we scrawl the news and use machine learning 
+method to rate the tendency of the news. After that, we 
+estimate the parameters of the distributions by the 
+expectation maximization algorithm. 
+
+\subsection{SMM Target Moments}
+To identify the parameters in the main model, we select the 
+following moments to be matched. Also, we use the optimal 
+weighting matrix to improve the efficiency of the estimation. 
+
+
+\section{Results}
+
+\section{Policy Experiments} 
+
+\section{Conclusion}
+
+\bibliographystyle{apacite}
+\bibliography{ref_res_app}
+\end{CJK*}
+\end{document}
