@@ -32,7 +32,6 @@ function stair(x)
     end
 end
 
-<<<<<<< HEAD
 # Solver 
 function solve(;para) 
     #parameters
