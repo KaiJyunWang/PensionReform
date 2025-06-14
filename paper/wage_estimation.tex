@@ -1,0 +1,57 @@
+\documentclass[a4paper, 12pt]{article}
+\input{prefix.tex}%
+\input{symbols.tex} 
+
+\title{Wage Estimation}
+\author{Kai-Jyun Wang\thanks{National Taiwan University, Department of Economics. Student ID: B11303072.}}
+\date{Spring 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{Model Specification}
+Let $y^*_t$ be the latent log wage at time $t$ and $a_t$ be the age at time $t$. $d_t$ 
+is the dummy for working. The specification of the model is as follows: 
+\begin{align*}
+    y^*_t &= f(a_t;\beta) + \epsilon_t, \quad \epsilon_t \sim N(0, \sigma_t^2) \\
+    \epsilon_t &= \rho\epsilon_{t-1} + \nu_t, \quad \nu_t \sim N(0, \sigma_\nu^2) \\
+    d_t &= \mathds{1}\brc{y_t^* \geq g(a_t,z_t;\gamma) + \eta_t}, \quad \eta_t \sim N(0, \sigma_\eta^2) \\ 
+    y_t &= y^*_t \times d_t. 
+\end{align*}
+We take the assumption that $\eta$ and $\epsilon$ are independent. The $\sigma_t^2$ must 
+obey that $\sigma_t^2 = \rho^2 \sigma_{t-1}^2 + \sigma_\nu^2$ for $t > 1$. $\sigma_t = 
+\sigma(a_t)$. Suppose $a_1$ is the first age that enters the labor market. We need to 
+estimate the variance of the first period in the data, $\sigma_1^2$. $z_t$ indicates whether 
+or not the individual has a child at time $t$.  
+
+\section{Estimation Procedure}
+\subsection{A Less Efficient Method}
+\begin{enumerate}
+    \item For $t = 1$, consider the contemporary log likelihood 
+    \begin{equation*}
+        \begin{split}
+            L_c(\beta_t,\gamma_t,\sigma_t,\sigma_{\eta,t}) &= \sum_{i=1}^N d_i\sbrc{\log\Phi\pth{\frac{y_t - g(a_t,z_t;\gamma_t)}{\sigma_{\eta,t}}} + \log\phi\pth{\frac{y_t - f(a_t;\beta_t)}{\sigma_t}} - \log\sigma_t} \\
+            &\qquad + (1 - d_i)\log\Phi\pth{\frac{f(a_t;\beta_t) - g(a_t,z_t;\gamma_t)}{\sqrt{\sigma_t^2 + \sigma_{\eta,t}^2}}},
+        \end{split}
+    \end{equation*}
+    where $\Phi$ and $\phi$ are the cumulative distribution function and the probability 
+    density function of the standard normal distribution, respectively. Estimate the 
+    $\beta$ for each period $t$ by maximizing the contemporary log likelihood. 
+    \item Using the estimated $\beta$ in first step, compute the residuals $y_t^* - f(a_t;\beta)$. 
+    Regress the residuals on the lagged residuals without intercept to estimate $\rho$ and $\sigma_\nu$. 
+\end{enumerate}
+Estimate the $\beta,\gamma,\sigma_1,\sigma_\eta$ for male and female separately. 
+
+\section{Some Notes}
+\begin{itemize}
+    \item The specification of $g$ is non-parametric. $g(a_t,z_t;\gamma) = \gamma_{a_t,z_t}$. Each possible 
+    combination of $a_t$ and $z_t$ corresponds to a $\gamma_{a_t,z_t}$.
+    \item Try different specifications of $f$, for instance, quadratic, cubic, or quartic. 
+    \item Estimate the naive model first, i.e., regress $y_t$ on $f(a_t;\beta)$ and use 
+    the coefficients as initial values for the $\beta$ and $\gamma$.
+\end{itemize}
+
+%\bibliographystyle{apacite}
+%\bibliography{final}
+\end{document}

@@ -1,0 +1,98 @@
+% For fonts
+% \usepackage{palatino}
+% \usepackage[T1]{fontenc}
+% \usepackage{mathpazo}
+% \usepackage{textcomp}
+% \usepackage{fouriernc}
+% \usepackage{mathastext}
+\usepackage[scaled = 0.9]{scholax}
+
+
+
+\usepackage{setspace}
+\usepackage{amsmath}%
+\usepackage{amssymb}%
+\usepackage{mathtools}
+\usepackage{dsfont}
+\usepackage[table]{xcolor}%
+
+\setlength{\marginparwidth}{6cm}
+\usepackage{todonotes}
+\usepackage[in]{fullpage}%
+%\usepackage{enumitem}
+
+\usepackage{amsthm}
+
+\usepackage{titlesec}%
+\titlelabel{\thetitle.\hspace{0.5em}}%
+\usepackage{xcolor}%
+\usepackage{mleftright}
+\usepackage{xspace}%
+\usepackage{graphicx}
+\usepackage{hyperref}%
+\usepackage{etoolbox}
+\usepackage{lipsum}
+\usepackage{appendix}
+\usepackage{tikz}
+\usepackage{mathrsfs}
+\usepackage{listings}
+\usepackage{enumitem}
+% \usepackage[normalem]{ulem}
+\usepackage[nameinlink,noabbrev]{cleveref}
+% Math font, must be loaded after amsmath
+\usepackage[scaled = 0.95,varbb]{newtxmath}
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\usepackage[natbibapa]{apacite}
+\usepackage{subcaption}
+
+\usepackage{hyperref}%
+\hypersetup{%
+unicode,
+breaklinks,%
+colorlinks=true,%
+urlcolor=blue,%
+linkcolor=[rgb]{0.5,0.0,0.0},%
+citecolor=[rgb]{0,0.2,0.445},%
+filecolor=[rgb]{0,0,0.4},
+anchorcolor=[rgb]={0.0,0.1,0.2}%
+}
+
+\newenvironment{thmenum}{%
+\begin{enumerate}[label=\small(\alph*\small),topsep=4pt,itemsep=4pt,partopsep=0pt, parsep=0pt]
+}{%
+\end{enumerate}
+}
+
+\newtheoremstyle{break}
+  {\topsep}{\topsep}%
+  {\itshape}{}%
+  {\bfseries}{}%
+  {\newline}{}%
+\theoremstyle{break}
+\newtheorem{theorem}{Theorem}[section]
+
+\theoremstyle{break}
+\newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{break}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{break}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{break}
+\newtheorem{definition}[theorem]{Definition}
+
+\theoremstyle{break}
+\newtheorem*{remark}{Remark}
+
+\theoremstyle{break}
+\newtheorem*{example}{Example}
+
+\newtheorem{innercustomthm}{Exercise}
+\newenvironment{exercise}[1]{\renewcommand\theinnercustomthm{#1}\innercustomthm}{\endinnercustomthm}
+
+\newenvironment{solution}{\begin{proof}[Solution]}{\end{proof}}
+
+\renewcommand\qedsymbol{\rule{2mm}{2mm}}

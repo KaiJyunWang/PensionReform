@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.12) (preloaded format=pdflatex 2023.1.14)  18 JUL 2024 11:08
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.12) (preloaded format=pdflatex 2023.1.14)  9 JUN 2025 14:44
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**c:/Users/kevin/pension_reform/PensionReform/paper/proposal.tex
-(c:/Users/kevin/pension_reform/PensionReform/paper/proposal.tex
+**c:/Users/kevin/pension_reform/pension_system/paper/proposal.tex
+(c:/Users/kevin/pension_reform/pension_system/paper/proposal.tex
 LaTeX2e <2022-11-01> patch level 1
 L3 programming layer <2022-12-17> (C:\Users\kevin\MiKTeX\tex/latex/base\article.cls
 Document Class: article 2022/07/02 v1.4n Standard LaTeX document class
@@ -964,14 +964,14 @@ Package rerunfilecheck Info: File `proposal.out' has not changed.
  ) 
 Here is how much of TeX's memory you used:
  14959 strings out of 476406
- 228150 string characters out of 2800354
+ 228160 string characters out of 2800354
  1865787 words of memory out of 3000000
  34912 multiletter control sequences out of 15000+600000
  568828 words of font info for 139 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 72i,19n,77p,303b,1271s stack positions out of 10000i,1000n,20000p,200000b,80000s
+ 72i,19n,77p,304b,1271s stack positions out of 10000i,1000n,20000p,200000b,80000s
 {C:/Users/kevin/MiKTeX/fonts/enc/dvips/ly1/texnansi.enc}<C:/Users/kevin/MiKTeX/fonts/type1/bitstrea/charter/bchb8a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/bitstrea/charter/bchr8a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/bitstrea/charter/bchri8a.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/doublestroke/dsrom12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/mathdesign/mdbch/md-chr7t.pfb><C:/Users/kevin/MiKTeX/fonts/type1/mathdesign/mdbch/md-chr7v.pfb><C:/Users/kevin/MiKTeX/fonts/type1/mathdesign/mdbch/md-chr7y.pfb><C:/Users/kevin/MiKTeX/fonts/type1/mathdesign/mdbch/md-chri7m.pfb>
-Output written on proposal.pdf (8 pages, 118917 bytes).
+Output written on proposal.pdf (8 pages, 118913 bytes).
 PDF statistics:
  227 PDF objects out of 1000 (max. 8388607)
  60 named destinations out of 1000 (max. 500000)
