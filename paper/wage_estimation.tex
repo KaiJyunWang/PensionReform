@@ -20,8 +20,8 @@ is the dummy for working. The specification of the model is as follows:
     y_t &= y^*_t \times d_t. 
 \end{align*}
 We take the assumption that $\eta$ and $\epsilon$ are independent. The $\sigma_t^2$ must 
-obey that $\sigma_t^2 = \rho^2 \sigma_{t-1}^2 + \sigma_\nu^2$ for $t > 1$. $\sigma_t = 
-\sigma(a_t)$. Suppose $a_1$ is the first age that enters the labor market. We need to 
+obey that $\sigma_t^2 = \rho^2 \sigma_{t-1}^2 + \sigma_\nu^2$ for $t > 1$. 
+Suppose $a_1$ is the first age that enters the labor market. We need to 
 estimate the variance of the first period in the data, $\sigma_1^2$. $z_t$ indicates whether 
 or not the individual has a child at time $t$.  
 
@@ -37,7 +37,8 @@ or not the individual has a child at time $t$.
     \end{equation*}
     where $\Phi$ and $\phi$ are the cumulative distribution function and the probability 
     density function of the standard normal distribution, respectively. Estimate the 
-    $\beta$ for each period $t$ by maximizing the contemporary log likelihood. 
+    $\beta$ for period $t = 1$ by maximizing the contemporary log likelihood with the first 
+    period data.  
     \item Using the estimated $\beta$ in first step, compute the residuals $y_t^* - f(a_t;\beta)$. 
     Regress the residuals on the lagged residuals without intercept to estimate $\rho$ and $\sigma_\nu$. 
 \end{enumerate}
