@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.12) (preloaded format=pdflatex 2023.1.14)  15 JUN 2025 14:16
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.12) (preloaded format=pdflatex 2023.1.14)  18 JUN 2025 14:36
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1233,13 +1233,13 @@ Package rerunfilecheck Info: File `wage_estimation.out' has not changed.
 Here is how much of TeX's memory you used:
  31512 strings out of 476406
  568372 string characters out of 2800354
- 1870787 words of memory out of 3000000
+ 1871787 words of memory out of 3000000
  51270 multiletter control sequences out of 15000+600000
  594915 words of font info for 175 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  120i,20n,134p,522b,570s stack positions out of 10000i,1000n,20000p,200000b,80000s
 {C:/Users/kevin/MiKTeX/fonts/enc/dvips/scholax/zcs_fn6vum.enc}{C:/Users/kevin/MiKTeX/fonts/enc/dvips/scholax/zcs_aisocu.enc}{C:/Users/kevin/MiKTeX/fonts/enc/dvips/scholax/zcs_wg6py3.enc}<C:/Users/kevin/MiKTeX/fonts/type1/public/newtx/NewTXMI.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/newtx/NewTXMI7.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/scholax/TeXGyreScholaX-Bold.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/scholax/TeXGyreScholaX-Regular.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/doublestroke/dsrom12.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/newtx/txexs.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/newtx/txmiaX.pfb><C:/Users/kevin/MiKTeX/fonts/type1/public/newtx/txsys.pfb>
-Output written on wage_estimation.pdf (2 pages, 106086 bytes).
+Output written on wage_estimation.pdf (2 pages, 106123 bytes).
 PDF statistics:
  88 PDF objects out of 1000 (max. 8388607)
  9 named destinations out of 1000 (max. 500000)

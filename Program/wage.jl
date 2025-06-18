@@ -107,10 +107,10 @@ res = optimize(θ -> ll(θ; df = df), θ0, NewtonTrustRegion(), autodiff = :forw
 begin
     f = Figure(size = (800, 400))
     ax = Axis(f[1,1])
-    lines!(ax, 20:60, exp.(Polynomial([β0, β1, β2]).(20:60)), label = "True", color = :teal, linewidth = 2)
-    lines!(ax, 20:60, exp.(7.5 .+ log.(20:60)), label = "Reservation wage", color = :orange, linewidth = 2)
-    lines!(ax, 20:60, exp.(Polynomial(res.minimizer[1:3]).(20:60)), label = "Estimated", color = :brown, linewidth = 2)
-    lines!(ax, 20:60, exp.(γ), label = "Estimated γ", color = :purple, linewidth = 2)
+    lines!(ax, 20:60, Polynomial([β0, β1, β2]).(20:60), label = "True", color = :teal, linewidth = 2)
+    lines!(ax, 20:60, 7.5 .+ log.(20:60), label = "Reservation wage", color = :orange, linewidth = 2)
+    lines!(ax, 20:60, Polynomial(res.minimizer[1:3]).(20:60), label = "Estimated", color = :brown, linewidth = 2)
+    lines!(ax, 20:60, γ, label = "Estimated γ", color = :purple, linewidth = 2)
     Legend(f[1,2], ax, framevisible = false)
     f
 end

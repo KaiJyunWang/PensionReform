@@ -31,8 +31,8 @@ or not the individual has a child at time $t$.
     \item For $t = 1$, consider the contemporary log likelihood 
     \begin{equation*}
         \begin{split}
-            L_c(\beta_t,\gamma_t,\sigma_t,\sigma_{\eta,t}) &= \sum_{i=1}^N d_i\sbrc{\log\Phi\pth{\frac{y_t - g(a_t,z_t;\gamma_t)}{\sigma_{\eta,t}}} + \log\phi\pth{\frac{y_t - f(a_t;\beta_t)}{\sigma_t}} - \log\sigma_t} \\
-            &\qquad + (1 - d_i)\log\Phi\pth{\frac{f(a_t;\beta_t) - g(a_t,z_t;\gamma_t)}{\sqrt{\sigma_t^2 + \sigma_{\eta,t}^2}}},
+            L_c(\beta_t,\gamma_t,\sigma_t,\sigma_{\eta,t}) &= \sum_{i=1}^N d_i\sbrc{\log\Phi\pth{\frac{y_t - g(a_t,z_t;\gamma_t)}{\sigma_\eta}} + \log\phi\pth{\frac{y_t - f(a_t;\beta_t)}{\sigma_t}} - \log\sigma_t} \\
+            &\qquad + (1 - d_i)\log\pth{1 - \Phi\pth{\frac{f(a_t;\beta_t) - g(a_t,z_t;\gamma_t)}{\sqrt{\sigma_t^2 + \sigma_\eta^2}}}},
         \end{split}
     \end{equation*}
     where $\Phi$ and $\phi$ are the cumulative distribution function and the probability 
