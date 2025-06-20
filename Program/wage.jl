@@ -46,7 +46,7 @@ function get_observation_gap(x)
     end
 end
 
-function get_last_observation(x, y)
+function get_last_observation(x)
     if all(iszero, x)
        return fill(missing, length(x))
     else
@@ -54,7 +54,22 @@ function get_last_observation(x, y)
     end
 end
 
-df = combine(gd, All(), :work => get_observation_gap => :observation_gap, :observed_wage => get_last_observation => :last_observed_wage, :age => get_last_observation => :last_observed_age)
+df = combine(gd, All(), :work => get_observation_gap => :observation_gap, :observed_wage => get_last_observation => :last_observed_wage)
+
+# smm 
+function sll(θ; df)
+   β = θ[1:3]
+   γ = θ[4:44]
+   ρ = θ[45]
+   σ_1 = exp(θ[46])
+   σ_ν = exp(θ[47])
+   σ_η = exp(θ[48])
+   
+end
+
+
+
+
 
 # MLE
 function ll(θ; df)

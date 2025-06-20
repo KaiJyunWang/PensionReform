@@ -39,10 +39,13 @@ or not the individual has a child at time $t$.
     density function of the standard normal distribution, respectively. Estimate the 
     $\beta$ for period $t = 1$ by maximizing the contemporary log likelihood with the first 
     period data.  
-    \item Using the estimated $\beta$ in first step, compute the residuals $y_t^* - f(a_t;\beta)$. 
-    Regress the residuals on the lagged residuals without intercept to estimate $\rho$ and $\sigma_\nu$. 
+    \item Using the estimated $\beta$ in first step, compute the residuals $\epsilon_t = y_t^* - f(a_t;\beta)$. 
+    \item Using the obtained parameter in step 1, estimate $\rho$ and $\sigma_\nu$ by the corrected maximum likelihood 
+    \begin{equation*}
+        L(\rho, \sigma_\nu) = \prod_{t=2}^{T}\frac{\Phi\pth{\frac{\epsilon_t - g(a_t;\hat{\gamma}) + f(a_t;\hat{\beta})}{\hat{\sigma}_\eta}}\phi\pth{\frac{\epsilon_t - \rho\epsilon_t}{\sigma_\nu}}\frac{1}{\sigma_\nu}}{\int \Phi\pth{\frac{\rho\epsilon_{t-1} + x - g(a_t;\hat{\gamma}) + f(a_t;\hat{\beta})}{\hat{\sigma}_\eta}}\phi\pth{\frac{x}{\sigma_\nu}}\frac{1}{\sigma_\nu}dx}.
+    \end{equation*}
 \end{enumerate}
-Estimate the $\beta,\gamma,\sigma_1,\sigma_\eta$ for male and female separately. 
+Estimate the parameters for male and female separately. 
 
 \section{Some Notes}
 \begin{itemize}
@@ -50,7 +53,7 @@ Estimate the $\beta,\gamma,\sigma_1,\sigma_\eta$ for male and female separately.
     combination of $a_t$ and $z_t$ corresponds to a $\gamma_{a_t,z_t}$.
     \item Try different specifications of $f$, for instance, quadratic, cubic, or quartic. 
     \item Estimate the naive model first, i.e., regress $y_t$ on $f(a_t;\beta)$ and use 
-    the coefficients as initial values for the $\beta$ and $\gamma$.
+    the coefficients as initial values for the $\beta$ and $\gamma$. 
 \end{itemize}
 
 %\bibliographystyle{apacite}
